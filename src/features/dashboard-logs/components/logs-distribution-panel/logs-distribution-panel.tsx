@@ -35,7 +35,7 @@ export function LogsDistributionPanel({
       : [range.fromMs, range.toMs];
 
   return (
-    <section className={styles.panel}>
+    <section className={styles.card}>
       <h2 className={styles.title}>
         Logs distribution <strong>24h</strong>
       </h2>

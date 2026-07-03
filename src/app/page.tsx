@@ -12,7 +12,7 @@ import styles from "./page.module.css";
 export default function DashboardPage() {
   return (
     <main className={styles.main}>
-      <h1 className={styles.pageTitle}>Overview</h1>
+      <h1 className={styles.pageTitle}>Dashboard</h1>
       <Suspense fallback={<p className={styles.loadingNote}>Fetching logs…</p>}>
         <PrefetchedDashboard />
       </Suspense>

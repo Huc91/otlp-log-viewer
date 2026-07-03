@@ -73,7 +73,6 @@ export function DataTable<TData>({
         <thead>
           {table.getHeaderGroups().map((headerGroup) => (
             <tr key={headerGroup.id} className={styles.headerRow}>
-              {expandable && <th className={styles.expanderHeader} />}
               {headerGroup.headers.map((header) => (
                 <th
                   key={header.id}
@@ -90,6 +89,7 @@ export function DataTable<TData>({
                   )}
                 </th>
               ))}
+              {expandable && <th className={styles.expanderHeader} />}
             </tr>
           ))}
         </thead>
@@ -113,6 +113,11 @@ export function DataTable<TData>({
                 tabIndex={expandable ? 0 : undefined}
                 aria-expanded={expandable ? tableRow.getIsExpanded() : undefined}
               >
+                {tableRow.getVisibleCells().map((cell) => (
+                  <td key={cell.id} className={styles.cell}>
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </td>
+                ))}
                 {expandable && (
                   <td className={styles.expanderCell} aria-hidden="true">
                     <span
@@ -122,15 +127,10 @@ export function DataTable<TData>({
                           : styles.chevron
                       }
                     >
-                      ▸
+                      ▾
                     </span>
                   </td>
                 )}
-                {tableRow.getVisibleCells().map((cell) => (
-                  <td key={cell.id} className={styles.cell}>
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </td>
-                ))}
               </tr>
               {tableRow.getIsExpanded() && renderExpandedRow !== undefined && (
                 <tr className={styles.expandedRow}>
@@ -151,8 +151,9 @@ export function DataTable<TData>({
             className={styles.pagerButton}
             onClick={() => table.previousPage()}
             disabled={!table.getCanPreviousPage()}
+            aria-label="Previous page"
           >
-            ← prev
+            ← <span className={styles.pagerButtonText}>prev</span>
           </button>
           <span className={styles.pagerStatus} aria-live="polite">
             page {table.getState().pagination.pageIndex + 1} of{" "}
@@ -163,8 +164,9 @@ export function DataTable<TData>({
             className={styles.pagerButton}
             onClick={() => table.nextPage()}
             disabled={!table.getCanNextPage()}
+            aria-label="Next page"
           >
-            next →
+            <span className={styles.pagerButtonText}>next</span> →
           </button>
         </nav>
       )}
