@@ -21,6 +21,7 @@
 
 .bar {
   fill: var(--color-green-50);
+  cursor: pointer;
   transform-box: fill-box;
   transform-origin: bottom;
   transition: fill 0.1s ease;
