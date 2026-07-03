@@ -1,4 +1,4 @@
-import { isServer, QueryClient } from "@tanstack/react-query";
+import { environmentManager, QueryClient } from "@tanstack/react-query";
 
 function makeQueryClient() {
   return new QueryClient({
@@ -15,10 +15,8 @@ function makeQueryClient() {
 
 let browserQueryClient: QueryClient | undefined;
 
-// Server: fresh client per request (no cross-user leakage).
-// Browser: singleton, so the hydrated cache survives re-renders.
 export function getQueryClient() {
-  if (isServer) {
+  if (environmentManager.isServer()) {
     return makeQueryClient();
   }
   browserQueryClient ??= makeQueryClient();

@@ -1,113 +1,148 @@
-import type { AnyValue, ExportLogsServiceRequest } from "./types";
-import type {
-  AttributeValue,
-  HistogramBucket,
-  LogRow,
-  ServiceGroup,
-  TimeRange,
+import type { ExportLogsServiceRequest, Resource } from "./types";
+import {
+  SEVERITY_BANDS,
+  type AttributeValue,
+  type ClusteredLogsByHour,
+  type LogRow,
+  type ServiceGroup,
+  type ServiceIdentity,
+  type SeverityBand,
 } from "./view-model";
 
-/*
- * THE DATA FORMATTING ALGORITHM — Luca writes this file personally.
- * The four functions below are the entire BE-shape → UI-shape boundary.
- * The UI is already wired to these signatures: implement them and the table,
- * histogram, grouped view, and stat all light up. Nothing else needs changing.
- *
- * References:
- * - Logs data model (fields, severity, timestamps):
- *   https://opentelemetry.io/docs/specs/otel/logs/data-model/
- * - Wire schema this API conforms to:
- *   https://github.com/open-telemetry/opentelemetry-proto/blob/main/opentelemetry/proto/logs/v1/logs.proto
- * - Input types: ./types.ts   Output types: ./view-model.ts
- */
 
-/**
- * AnyValue → primitive.
- *
- * Exactly one member of the union is set per value (stringValue | boolValue |
- * intValue | doubleValue | arrayValue | kvlistValue | bytesValue).
- * Nested arrayValue / kvlistValue need a readable string representation.
- */
-export function unwrapAnyValue(
-  value: AnyValue | undefined,
-): AttributeValue | undefined {
-  void value;
-  return undefined; // TODO(luca)
-}
-
-/**
- * Nested OTLP request → flat LogRow[] (one row per logRecord).
- *
- * Walk: resourceLogs[] → read service identity once from resource.attributes
- * (service.namespace / service.name / service.version) → scopeLogs[] →
- * logRecords[] → emit a LogRow carrying that service.
- *
- * Per-field notes (verified against the live API):
- * - timestampMs   — timeUnixNano is a NANOSECOND STRING that overflows
- *                   Number.MAX_SAFE_INTEGER. BigInt(value) / 1_000_000n,
- *                   then Number(). Never Number(timeUnixNano) directly.
- * - severityBand  — from severityNumber (the source of truth; the mock API's
- *                   severityText can disagree). Spec ranges:
- *                   0 UNSPECIFIED · 1-4 TRACE · 5-8 DEBUG · 9-12 INFO ·
- *                   13-16 WARN · 17-20 ERROR · 21-24 FATAL
- * - severityLabel — the text shown in the Severity column.
- * - body          — unwrap body.stringValue.
- * - bodyKind      — classify for the expanded row: "json" (parses as JSON),
- *                   "stacktrace" (multi-line "  at …" frames), else "text".
- * - attributes    — attributes[] through unwrapAnyValue into a Record.
- * - id            — no natural id on the wire; build a unique one (e.g.
- *                   `${resourceIndex}-${scopeIndex}-${recordIndex}`). It is
- *                   the React/TanStack row key.
- */
-function buildLogRowId(
-  resourceIndex: number,
-  scopeIndex: number,
-  recordIndex: number,
-): string {
+function buildLogRowId(resourceIndex: number, scopeIndex: number, recordIndex: number): string {
   return `${resourceIndex}-${scopeIndex}-${recordIndex}`;
 }
 
+function nanoStringToMs(nanoStr: string): number {
+  // timeUnixNano arrives as a string (exceeds safe integer range as Number),
+  // convert via BigInt to avoid precision loss, then divide down to ms.
+  return Number(BigInt(nanoStr) / 1_000_000n);
+}
+
+function detectBodyKind(text: string | undefined): "text" | "json" {
+  if (!text) return "text";
+  // cheap precheck avoids running JSON.parse (expensive w/ try-catch) on
+  // the ~80% of bodies that are plain text and can't possibly be JSON
+  const c = text.charCodeAt(0);
+  if (c !== 123 /* { */ && c !== 91 /* [ */) return "text";
+  try {
+    JSON.parse(text);
+    return "json";
+  } catch {
+    return "text";
+  }
+}
+
+// severityNumber bands per the OTLP data model: 1-4 TRACE, 5-8 DEBUG, 9-12 INFO,
+// 13-16 WARN, 17-20 ERROR, 21-24 FATAL; 0 / out-of-range → UNSPECIFIED.
+function severityBandOf(severityNumber: number): SeverityBand {
+  if (severityNumber < 1 || severityNumber > 24) return "UNSPECIFIED";
+  return SEVERITY_BANDS[Math.ceil(severityNumber / 4)];
+}
+
+function extractServiceIdentity(resource: Resource | undefined): ServiceIdentity {
+  let namespace = "";
+  let name = "";
+  let version = "";
+
+  resource?.attributes?.forEach((attribute) => {
+    const stringValue = attribute.value?.stringValue;
+    if (typeof stringValue !== "string") return;
+    if (attribute.key === "service.namespace") namespace = stringValue;
+    else if (attribute.key === "service.name") name = stringValue;
+    else if (attribute.key === "service.version") version = stringValue;
+  });
+
+  return {
+    key: `${namespace}/${name}/${version}`,
+    namespace,
+    name: name || "unknown service",
+    version,
+  };
+}
+
 export function flattenLogs(request: ExportLogsServiceRequest): LogRow[] {
+  const rows: LogRow[] = [];
+
   request.resourceLogs?.forEach((resourceLog, resourceIndex) => {
+    const service = extractServiceIdentity(resourceLog.resource);
+
     resourceLog.scopeLogs?.forEach((scopeLog, scopeIndex) => {
       scopeLog.logRecords?.forEach((logRecord, recordIndex) => {
-        const logRow: LogRow = {
+        const nano = logRecord.timeUnixNano ?? logRecord.observedTimeUnixNano;
+        if (nano === undefined) return;
+
+        const bodyText = logRecord.body?.stringValue ?? "";
+        const severityNumber = logRecord.severityNumber ?? 0;
+        const severityBand = severityBandOf(severityNumber);
+
+        const attributes: Record<string, AttributeValue> = {};
+        logRecord.attributes?.forEach((attribute) => {
+          if (!attribute.key) return;
+          attributes[attribute.key] =
+            attribute.value?.stringValue ??
+            attribute.value?.intValue ??
+            attribute.value?.boolValue ??
+            attribute.value?.doubleValue ??
+            "";
+        });
+
+        rows.push({
           id: buildLogRowId(resourceIndex, scopeIndex, recordIndex),
-          severityNumber: logRecord.severityNumber,
-          severityText: logRecord.severityText,
-          body: logRecord.body.stringValue,
-          bodyKind: logRecord.body.stringValue ? "text" : "json",
-          attributes: logRecord.attributes.map((attribute) => ({
-            key: attribute.key,
-            value: attribute.value.stringValue,
-          })),
-          timestampMs: logRecord.timeUnixNano,
-          timestamp: new Date(logRecord.timeUnixNano).toISOString(),
-        };
-        void logRow;
+          timestampMs: nanoStringToMs(nano),
+          severityNumber,
+          severityBand,
+          severityLabel: severityBand,
+          body: bodyText,
+          bodyKind: detectBodyKind(bodyText),
+          attributes,
+          service,
+        });
       });
     });
   });
-  return []; // TODO(luca)
+
+  return rows.sort((a, b) => b.timestampMs - a.timestampMs);
 }
 
-/**
- * Rows → fixed number of equal-width time buckets across `range`.
- *
- * Return one entry per bucket INCLUDING empty ones (count: 0) — the chart
- * relies on a complete series. Each bucket: startMs (inclusive), endMs
- * (exclusive), count. d3-array's bin() can do this, or plain index math:
- * bucketIndex = floor((t - fromMs) / bucketWidth), clamped to the last bucket.
- */
-export function buildHistogram(
+const HOUR_IN_MS = 3_600_000;
+
+export function clusterLogsByHour(
   rows: LogRow[],
-  range: TimeRange,
-  bucketCount: number,
-): HistogramBucket[] {
-  void rows;
-  void range;
-  void bucketCount;
-  return []; // TODO(luca)
+  rangeHours: number = 24,
+): ClusteredLogsByHour[] {
+
+  const newestMs = rows[0]?.timestampMs ?? Date.now();
+  const newestBucketStartMs = Math.floor(newestMs / HOUR_IN_MS) * HOUR_IN_MS;
+  const endMs = newestBucketStartMs + HOUR_IN_MS;
+  const startMs = endMs - rangeHours * HOUR_IN_MS;
+
+  const clustersDictionary: Record<string, ClusteredLogsByHour> = {};
+
+  for (let hour = 0; hour < rangeHours; hour++) {
+    const startTime = startMs + hour * HOUR_IN_MS;    
+    clustersDictionary[hourKeyOf(startTime)] = {
+      startTime,
+      endTime: startTime + HOUR_IN_MS,
+      count: 0,
+      idsOfLogs: [],
+    };
+  }
+
+  rows.forEach((row) => {
+    const cluster = clustersDictionary[hourKeyOf(row.timestampMs)];
+    if (!cluster) return;
+    cluster.count += 1;
+    cluster.idsOfLogs.push(row.id);
+  });
+
+  return Object.values(clustersDictionary);
+}
+
+// "2026-07-03T11:00" — the log's timestamp truncated to its hour, in UTC
+function hourKeyOf(timestampMs: number): string {
+  return new Date(timestampMs).toISOString().slice(0, 13) + ":00";
 }
 
 /**

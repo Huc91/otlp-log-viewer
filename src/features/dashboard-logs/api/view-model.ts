@@ -36,10 +36,11 @@ export interface LogRow {
   service: ServiceIdentity;
 }
 
-export interface HistogramBucket {
-  startMs: number;
-  endMs: number;
+export interface ClusteredLogsByHour {
+  startTime: number;
+  endTime: number;
   count: number;
+  idsOfLogs: string[];
 }
 
 export interface ServiceGroup {
@@ -54,7 +55,7 @@ export interface TimeRange {
 
 export interface LogsDashboardData {
   rows: LogRow[];
-  buckets: HistogramBucket[];
+  buckets: ClusteredLogsByHour[];
   groups: ServiceGroup[];
   range: TimeRange;
   fetchedAtMs: number;
