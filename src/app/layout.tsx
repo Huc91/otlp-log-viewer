@@ -17,9 +17,9 @@ const plexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "OTLP Log Viewer",
+  title: "Neatlogs",
   description:
-    "Scan OTLP log records, drill into details, and understand log distribution across services",
+    "Neatlogs — scan OTLP log records, drill into details, and understand log distribution across services",
 };
 
 export const viewport: Viewport = {
