@@ -88,9 +88,9 @@ src/
                               # fetch-logs.ts, transform.ts (Luca's algorithm),
                               # dashboard-data.ts (single server-side assembly point)
       components/             # logs-dashboard (query consumer + grid), log-table,
-                              # log-table-panel, log-columns, log-details,
+                              # log-table-card, log-columns, log-details,
                               # severity-badge, grouped-log-list, display-mode-toggle,
-                              # logs-distribution-panel
+                              # logs-distribution-card
       hooks/                  # use-logs-dashboard.ts (TanStack Query hook)
       stores/                 # index.ts — display-mode store (zustand)
   lib/                        # truly app-wide pure helpers only

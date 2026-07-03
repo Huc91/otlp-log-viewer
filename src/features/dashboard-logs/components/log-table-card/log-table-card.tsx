@@ -7,12 +7,12 @@ import { GroupedLogList } from "../grouped-log-list/grouped-log-list";
 import { LogTable } from "../log-table/log-table";
 import styles from "./style.module.css";
 
-interface LogTablePanelProps {
+interface LogTableCardProps {
   rows: LogRow[];
   groups: NamespaceGroup[];
 }
 
-export function LogTablePanel({ rows, groups }: LogTablePanelProps) {
+export function LogTableCard({ rows, groups }: LogTableCardProps) {
   const displayMode = useDashboardUiStore((state) => state.displayMode);
   const isTableExpanded = useDashboardUiStore(
     (state) => state.isTableExpanded,

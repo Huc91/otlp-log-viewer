@@ -4,8 +4,8 @@ import { StatCard } from "@/components/stat-card/stat-card";
 import { formatClock } from "@/lib/format";
 import { useLogsDashboard } from "../../hooks/use-logs-dashboard";
 import { useDashboardUiStore } from "../../stores";
-import { LogTablePanel } from "../log-table-panel/log-table-panel";
-import { LogsDistributionPanel } from "../logs-distribution-panel/logs-distribution-panel";
+import { LogTableCard } from "../log-table-card/log-table-card";
+import { LogsDistributionCard } from "../logs-distribution-card/logs-distribution-card";
 import styles from "./style.module.css";
 
 export function LogsDashboard() {
@@ -39,10 +39,10 @@ export function LogsDashboard() {
         isTableExpanded ? `${styles.grid} ${styles.gridExpanded}` : styles.grid
       }
     >
-      <LogTablePanel rows={data.rows} groups={data.groups} />
+      <LogTableCard rows={data.rows} groups={data.groups} />
       {!isTableExpanded && (
         <div className={styles.rightColumn}>
-          <LogsDistributionPanel buckets={data.buckets} range={data.range} />
+          <LogsDistributionCard buckets={data.buckets} range={data.range} />
           <StatCard
             value={data.rows.length}
             caption={`logs at ${formatClock(new Date(data.fetchedAtMs))}`}

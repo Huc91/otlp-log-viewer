@@ -3,15 +3,15 @@ import { formatClock, formatDateTime } from "@/lib/format";
 import type { ClusteredLogsByHour, TimeRange } from "@/features/dashboard-logs/api/view-model";
 import styles from "./style.module.css";
 
-interface LogsDistributionPanelProps {
+interface LogsDistributionCardProps {
   buckets: ClusteredLogsByHour[];
   range: TimeRange;
 }
 
-export function LogsDistributionPanel({
+export function LogsDistributionCard({
   buckets,
   range,
-}: LogsDistributionPanelProps) {
+}: LogsDistributionCardProps) {
   const points = buckets.map((bucket, bucketIndex) => ({
     x: bucket.startTime,
     y: bucket.count,
@@ -19,7 +19,7 @@ export function LogsDistributionPanel({
     sublabel: `${formatDateTime(new Date(bucket.startTime))} - ${formatClock(
       new Date(bucket.endTime),
     )}`,
-    // a tick every 4h (more would collide) plus the newest bucket
+    // a tick every 4h
     xLabel:
       bucketIndex % 4 === 0 || bucketIndex === buckets.length - 1
         ? formatClock(new Date(bucket.startTime))
