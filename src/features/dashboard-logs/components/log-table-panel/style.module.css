@@ -1,9 +1,25 @@
 .card {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
   border: 1px solid var(--color-gray-700);
   border-radius: 8px;
   background: var(--color-green-100);
   color: var(--color-green-900);
   padding: 24px 16px;
+}
+
+/* the area under the controls: fills the card, children scroll inside it */
+.tableArea {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+.tableArea.scrollsWhole {
+  display: block;
+  overflow-y: auto;
 }
 
 .title {

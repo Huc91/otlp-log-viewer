@@ -1,10 +1,21 @@
 .panel {
   display: flex;
   flex-direction: column;
+  flex: 1;
   gap: 24px;
   border: 1px solid var(--color-gray-700);
   border-radius: 8px;
   padding: 24px;
+}
+
+.chartArea {
+  display: flex;
+  flex: 1;
+  min-height: 203px;
+}
+
+.chartArea svg {
+  height: 100%;
 }
 
 .title {

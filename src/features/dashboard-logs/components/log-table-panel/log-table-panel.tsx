@@ -23,9 +23,13 @@ export function LogTablePanel({ rows, groups }: LogTablePanelProps) {
         <span className={styles.expandHint}>expand →</span>
       </div>
       {displayMode === "grouped" ? (
-        <GroupedLogList groups={groups} />
+        <div className={`${styles.tableArea} ${styles.scrollsWhole}`}>
+          <GroupedLogList groups={groups} />
+        </div>
       ) : (
-        <LogTable rows={rows} />
+        <div className={styles.tableArea}>
+          <LogTable rows={rows} />
+        </div>
       )}
     </section>
   );

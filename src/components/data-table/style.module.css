@@ -1,21 +1,79 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+/* rows (and opened expansions) scroll here; the pager below stays pinned */
+.tableScroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
 .table {
   width: 100%;
-  border-collapse: collapse;
+  /* fixed layout: column widths come from the header row, not row content,
+     so the table never resizes when paging changes what's in the cells */
+  table-layout: fixed;
+  /* separate, not collapse: collapsed borders detach from position:sticky
+     headers, so borders live on the cells instead */
+  border-collapse: separate;
+  border-spacing: 0;
   text-align: left;
   font-size: 14px;
 }
 
-.headerRow {
+/* header stays visible while rows scroll behind it */
+.headerCell,
+.expanderHeader {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--color-green-100); /* opaque: rows must not shine through */
   border-bottom: 1px solid var(--color-green-950);
 }
 
 .headerCell {
-  padding: 8px 12px;
-  font-weight: 700;
+  padding: 10px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  /* dim the text only — opacity on the cell would fade the sticky background */
+  color: color-mix(in oklab, currentColor 65%, transparent);
 }
 
-.dataRow {
+.expanderHeader,
+.expanderCell {
+  width: 28px;
+}
+
+.expanderCell {
+  padding: 10px 0 10px 12px;
+  vertical-align: top;
+}
+
+.chevron {
+  display: inline-block;
+  opacity: 0.55;
+  transition: transform 0.15s ease;
+}
+
+.chevronOpen {
+  transform: rotate(90deg);
+}
+
+.dataRow .cell,
+.dataRow .expanderCell,
+.expandedRow td {
   border-bottom: 1px solid var(--color-green-950);
+}
+
+.dataRow:focus-visible {
+  outline: 2px solid var(--color-green-400);
+  outline-offset: -2px;
 }
 
 .expandableRow {
@@ -28,11 +86,11 @@
 }
 
 .expandedRow {
-  border-bottom: 1px solid var(--color-green-950);
+  background: color-mix(in oklab, var(--color-green-900) 5%, transparent);
 }
 
 .cell {
-  padding: 8px 12px;
+  padding: 10px 12px;
   vertical-align: top;
 }
 
@@ -41,4 +99,45 @@
   text-align: center;
   font-size: 14px;
   opacity: 0.6;
+}
+
+.pager {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px;
+  font-size: 14px;
+}
+
+.pagerButton {
+  padding: 4px 12px;
+  border: 1px solid var(--color-gray-700);
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  transition: border-color 0.1s ease, color 0.1s ease;
+}
+
+.pagerButton:hover:not(:disabled),
+.pagerButton:focus-visible {
+  border-color: var(--color-green-400);
+  color: var(--color-green-400);
+}
+
+.pagerButton:focus-visible {
+  outline: 2px solid var(--color-green-400);
+  outline-offset: 2px;
+}
+
+.pagerButton:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.pagerStatus {
+  opacity: 0.8;
 }

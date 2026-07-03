@@ -1,6 +1,7 @@
 .grid {
   display: grid;
   flex: 1;
+  min-height: 0;
   grid-template-columns: 1fr 1fr;
   gap: 32px;
 }
@@ -16,6 +17,7 @@
   flex-direction: column;
   justify-content: space-between;
   gap: 56px;
+  min-height: 0;
 }
 
 .stateNote {

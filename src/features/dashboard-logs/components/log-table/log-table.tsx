@@ -17,6 +17,7 @@ export function LogTable({ rows }: LogTableProps) {
       getRowId={(row) => row.id}
       emptyMessage="No log rows yet — waiting on the data formatting algorithm (flattenLogs)."
       renderExpandedRow={(row) => <LogDetails row={row} />}
+      pageSize={12}
     />
   );
 }

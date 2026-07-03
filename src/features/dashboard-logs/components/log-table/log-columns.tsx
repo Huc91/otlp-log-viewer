@@ -8,6 +8,7 @@ export const logColumns: ColumnDef<LogRow>[] = [
   {
     accessorKey: "severityBand",
     header: "Severity",
+    meta: { fixedWidth: 128 },
     cell: ({ row }) => (
       <SeverityBadge
         band={row.original.severityBand}
@@ -18,6 +19,7 @@ export const logColumns: ColumnDef<LogRow>[] = [
   {
     accessorKey: "timestampMs",
     header: "Time",
+    meta: { fixedWidth: 104 },
     cell: ({ row }) => formatTime(new Date(row.original.timestampMs)),
   },
   {

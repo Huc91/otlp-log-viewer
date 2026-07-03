@@ -38,6 +38,7 @@ export function BarChart({
   return (
     <svg
       viewBox={`0 0 ${CHART_WIDTH} ${CHART_HEIGHT}`}
+      preserveAspectRatio="none"
       role="img"
       aria-label={ariaLabel}
       className={styles.chart}
