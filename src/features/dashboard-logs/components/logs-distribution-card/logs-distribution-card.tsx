@@ -1,5 +1,8 @@
+"use client";
+
 import { BarChart } from "@/components/charts/bar-chart/bar-chart";
 import type { ClusteredLogsByHour, TimeRange } from "@/features/dashboard-logs/api/view-model";
+import { useDashboardUiStore } from "@/features/dashboard-logs/stores";
 import styles from "./style.module.css";
 
 interface LogsDistributionCardProps {
@@ -11,6 +14,9 @@ export function LogsDistributionCard({
   buckets,
   range,
 }: LogsDistributionCardProps) {
+  const highlightedHourMs = useDashboardUiStore(
+    (state) => state.highlightedHourMs,
+  );
   const points = buckets.map((bucket, bucketIndex) => ({
     x: bucket.startTime,
     y: bucket.count,
@@ -40,6 +46,7 @@ export function LogsDistributionCard({
           xDomain={xDomain}
           ariaLabel="Log count distribution over time"
           emptyMessage="No logs in the selected window."
+          highlightedX={highlightedHourMs ?? undefined}
         />
       </div>
       <dl className={styles.rangeCaption}>

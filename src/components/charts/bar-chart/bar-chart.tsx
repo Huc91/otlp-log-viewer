@@ -21,6 +21,7 @@ interface BarChartProps {
   xDomain: [number, number];
   ariaLabel: string;
   emptyMessage: string;
+  highlightedX?: number;
 }
 
 function tooltipClassName(centerPercent: number, barFraction: number): string {
@@ -36,6 +37,7 @@ export function BarChart({
   xDomain,
   ariaLabel,
   emptyMessage,
+  highlightedX,
 }: BarChartProps) {
   const [hoveredPoint, setHoveredPoint] = useState<BarChartPoint | null>(null);
 
@@ -70,7 +72,11 @@ export function BarChart({
             return (
               <rect
                 key={point.x}
-                className={styles.bar}
+                className={
+                  point.x === highlightedX
+                    ? `${styles.bar} ${styles.barHighlighted}`
+                    : styles.bar
+                }
                 style={{ animationDelay: `${pointIndex * 15}ms` }}
                 x={xScale(point.x)}
                 y={CHART_HEIGHT - barHeight}

@@ -44,7 +44,8 @@
 }
 
 .bar:hover,
-.bar:focus-visible {
+.bar:focus-visible,
+.barHighlighted {
   fill: var(--color-green-400);
 }
 

@@ -27,6 +27,7 @@ interface DataTableProps<TData> {
   emptyMessage: string;
   renderExpandedRow?: (row: TData) => ReactNode;
   pageSize?: number;
+  onRowHoverChange?: (row: TData | null) => void;
 }
 
 export function DataTable<TData>({
@@ -36,6 +37,7 @@ export function DataTable<TData>({
   emptyMessage,
   renderExpandedRow,
   pageSize,
+  onRowHoverChange,
 }: DataTableProps<TData>) {
   const expandable = renderExpandedRow !== undefined;
   const paginated = pageSize !== undefined;
@@ -110,6 +112,14 @@ export function DataTable<TData>({
                 }
                 tabIndex={expandable ? 0 : undefined}
                 aria-expanded={expandable ? tableRow.getIsExpanded() : undefined}
+                onMouseEnter={
+                  onRowHoverChange
+                    ? () => onRowHoverChange(tableRow.original)
+                    : undefined
+                }
+                onMouseLeave={
+                  onRowHoverChange ? () => onRowHoverChange(null) : undefined
+                }
               >
                 {tableRow.getVisibleCells().map((cell) => (
                   <td key={cell.id} className={styles.cell}>
