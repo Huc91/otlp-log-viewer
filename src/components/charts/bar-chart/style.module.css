@@ -1,0 +1,23 @@
+.chart {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.bar {
+  fill: var(--color-gray-300);
+  transition: fill 0.1s ease;
+}
+
+.bar:hover {
+  fill: var(--color-green-400);
+}
+
+.emptyNote {
+  display: grid;
+  place-items: center;
+  min-height: 203px;
+  margin: 0;
+  font-size: 14px;
+  opacity: 0.6;
+}

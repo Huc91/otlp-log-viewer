@@ -1,0 +1,22 @@
+.card {
+  border: 1px solid var(--color-gray-700);
+  border-radius: 8px;
+  padding: 24px;
+}
+
+.stat {
+  display: flex;
+  align-items: baseline;
+  gap: 20px;
+  margin: 0;
+}
+
+.value {
+  font-size: 72px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.caption {
+  font-size: 24px;
+}

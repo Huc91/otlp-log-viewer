@@ -1,0 +1,33 @@
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  border: 1px solid var(--color-gray-700);
+  border-radius: 8px;
+  padding: 24px;
+}
+
+.title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 400;
+  color: var(--color-white);
+}
+
+.rangeCaption {
+  display: grid;
+  grid-template-columns: max-content max-content;
+  column-gap: 24px;
+  row-gap: 2px;
+  justify-content: end;
+  margin: 0;
+  font-size: 16px;
+}
+
+.rangeLabel {
+  opacity: 0.7;
+}
+
+.rangeValue {
+  margin: 0;
+}

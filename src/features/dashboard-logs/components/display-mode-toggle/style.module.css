@@ -1,0 +1,41 @@
+.toggleButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 16px;
+  color: inherit;
+}
+
+.track {
+  display: inline-flex;
+  align-items: center;
+  width: 36px;
+  height: 20px;
+  padding: 2px;
+  border-radius: 100px;
+  border: 1px solid var(--color-green-900);
+  background: transparent;
+  transition: background 0.15s ease;
+}
+
+.toggleButton[aria-checked="true"] .track {
+  background: var(--color-green-400);
+}
+
+.thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--color-green-900);
+  transform: translateX(0);
+  transition: transform 0.15s ease;
+}
+
+.toggleButton[aria-checked="true"] .thumb {
+  transform: translateX(16px);
+}

@@ -1,0 +1,38 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--color-severity-unspecified);
+}
+
+.dot[data-band="FATAL"] {
+  background: var(--color-severity-fatal);
+}
+
+.dot[data-band="ERROR"] {
+  background: var(--color-severity-error);
+}
+
+.dot[data-band="WARN"] {
+  background: var(--color-severity-warn);
+}
+
+.dot[data-band="INFO"] {
+  background: var(--color-severity-info);
+}
+
+.dot[data-band="DEBUG"] {
+  background: var(--color-severity-debug);
+}
+
+.dot[data-band="TRACE"] {
+  background: var(--color-severity-trace);
+}

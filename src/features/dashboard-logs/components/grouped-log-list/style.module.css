@@ -1,0 +1,23 @@
+.groupList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.groupSummary {
+  cursor: pointer;
+  padding: 8px 12px;
+  font-weight: 700;
+}
+
+.groupMeta {
+  font-weight: 400;
+  opacity: 0.6;
+}
+
+.emptyNote {
+  padding: 40px 12px;
+  text-align: center;
+  font-size: 14px;
+  opacity: 0.6;
+}

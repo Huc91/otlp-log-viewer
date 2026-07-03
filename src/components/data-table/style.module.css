@@ -1,0 +1,44 @@
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 14px;
+}
+
+.headerRow {
+  border-bottom: 1px solid var(--color-green-950);
+}
+
+.headerCell {
+  padding: 8px 12px;
+  font-weight: 700;
+}
+
+.dataRow {
+  border-bottom: 1px solid var(--color-green-950);
+}
+
+.expandableRow {
+  cursor: pointer;
+  transition: background 0.1s ease;
+}
+
+.expandableRow:hover {
+  background: color-mix(in oklab, var(--color-green-400) 20%, transparent);
+}
+
+.expandedRow {
+  border-bottom: 1px solid var(--color-green-950);
+}
+
+.cell {
+  padding: 8px 12px;
+  vertical-align: top;
+}
+
+.emptyNote {
+  padding: 40px 12px;
+  text-align: center;
+  font-size: 14px;
+  opacity: 0.6;
+}
