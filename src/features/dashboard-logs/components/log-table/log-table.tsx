@@ -1,8 +1,10 @@
 "use client";
 
-import { DataTable } from "@/components/data-table/data-table";
+import { useMemo } from "react";
+import { DataTable, type RowFocusRequest } from "@/components/data-table/data-table";
 import type { LogRow } from "@/features/dashboard-logs/api/view-model";
 import { useDashboardUiStore } from "@/features/dashboard-logs/stores";
+import { HOUR_IN_MS } from "@/lib/time";
 import { LogDetails } from "../log-details/log-details";
 import { expandedLogColumns, logColumns } from "./log-columns";
 
@@ -10,16 +12,32 @@ interface LogTableProps {
   rows: LogRow[];
   pageSize?: number;
   showServiceColumns?: boolean;
+  followHourFocus?: boolean;
 }
 
 export function LogTable({
   rows,
   pageSize,
   showServiceColumns = false,
+  followHourFocus = false,
 }: LogTableProps) {
   const setHighlightedHour = useDashboardUiStore(
     (state) => state.setHighlightedHour,
   );
+  const hourFocusRequest = useDashboardUiStore((state) =>
+    followHourFocus ? state.hourFocusRequest : null,
+  );
+
+  const rowFocusRequest = useMemo<RowFocusRequest | undefined>(() => {
+    if (hourFocusRequest === null) return undefined;
+    const targetRow = rows.find(
+      (row) =>
+        row.timestampMs >= hourFocusRequest.hourMs &&
+        row.timestampMs < hourFocusRequest.hourMs + HOUR_IN_MS,
+    );
+    if (targetRow === undefined) return undefined;
+    return { rowId: targetRow.id, requestId: hourFocusRequest.requestId };
+  }, [hourFocusRequest, rows]);
 
   return (
     <DataTable
@@ -30,6 +48,7 @@ export function LogTable({
       renderExpandedRow={(row) => <LogDetails row={row} />}
       pageSize={pageSize}
       onRowHoverChange={(row) => setHighlightedHour(row ? row.timestampMs : null)}
+      rowFocusRequest={rowFocusRequest}
     />
   );
 }

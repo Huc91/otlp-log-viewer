@@ -22,6 +22,7 @@ interface BarChartProps {
   ariaLabel: string;
   emptyMessage: string;
   highlightedX?: number;
+  onPointSelect?: (point: BarChartPoint) => void;
 }
 
 function tooltipClassName(centerPercent: number, barFraction: number): string {
@@ -38,6 +39,7 @@ export function BarChart({
   ariaLabel,
   emptyMessage,
   highlightedX,
+  onPointSelect,
 }: BarChartProps) {
   const [hoveredPoint, setHoveredPoint] = useState<BarChartPoint | null>(null);
 
@@ -94,6 +96,15 @@ export function BarChart({
                 onMouseLeave={() => setHoveredPoint(null)}
                 onFocus={() => setHoveredPoint(point)}
                 onBlur={() => setHoveredPoint(null)}
+                onClick={onPointSelect ? () => onPointSelect(point) : undefined}
+                onKeyDown={
+                  onPointSelect
+                    ? (event) => {
+                        if (event.key !== "Enter") return;
+                        onPointSelect(point);
+                      }
+                    : undefined
+                }
               />
             );
           })}

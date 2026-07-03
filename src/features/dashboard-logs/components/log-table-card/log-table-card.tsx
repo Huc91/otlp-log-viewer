@@ -44,7 +44,12 @@ export function LogTableCard({ rows, groups }: LogTableCardProps) {
         </div>
       ) : (
         <div key={displayMode} className={styles.tableArea}>
-          <LogTable rows={rows} pageSize={12} showServiceColumns={isTableExpanded} />
+          <LogTable
+            rows={rows}
+            pageSize={12}
+            showServiceColumns={isTableExpanded}
+            followHourFocus
+          />
         </div>
       )}
     </section>

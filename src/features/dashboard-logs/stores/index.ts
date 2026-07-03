@@ -1,22 +1,24 @@
 import { create } from "zustand";
+import { HOUR_IN_MS } from "@/lib/time";
 
 export type DisplayMode = "flat" | "grouped";
-
-const HOUR_IN_MS = 3_600_000;
 
 interface DashboardUiState {
   displayMode: DisplayMode;
   isTableExpanded: boolean;
   highlightedHourMs: number | null;
+  hourFocusRequest: { hourMs: number; requestId: number } | null;
   toggleDisplayMode: () => void;
   toggleTableExpanded: () => void;
   setHighlightedHour: (timestampMs: number | null) => void;
+  requestHourFocus: (hourMs: number) => void;
 }
 
 export const useDashboardUiStore = create<DashboardUiState>()((set) => ({
   displayMode: "flat",
   isTableExpanded: false,
   highlightedHourMs: null,
+  hourFocusRequest: null,
   toggleDisplayMode: () =>
     set((state) => ({
       displayMode: state.displayMode === "flat" ? "grouped" : "flat",
@@ -30,4 +32,11 @@ export const useDashboardUiStore = create<DashboardUiState>()((set) => ({
           ? null
           : Math.floor(timestampMs / HOUR_IN_MS) * HOUR_IN_MS,
     }),
+  requestHourFocus: (hourMs) =>
+    set((state) => ({
+      hourFocusRequest: {
+        hourMs,
+        requestId: (state.hourFocusRequest?.requestId ?? 0) + 1,
+      },
+    })),
 }));

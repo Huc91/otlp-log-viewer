@@ -1,6 +1,13 @@
 "use client";
 
-import { Fragment, type KeyboardEvent, type ReactNode } from "react";
+import {
+  Fragment,
+  useEffect,
+  useRef,
+  useState,
+  type KeyboardEvent,
+  type ReactNode,
+} from "react";
 import {
   flexRender,
   getCoreRowModel,
@@ -20,6 +27,11 @@ declare module "@tanstack/react-table" {
   }
 }
 
+export interface RowFocusRequest {
+  rowId: string;
+  requestId: number;
+}
+
 interface DataTableProps<TData> {
   rows: TData[];
   columns: ColumnDef<TData>[];
@@ -28,6 +40,7 @@ interface DataTableProps<TData> {
   renderExpandedRow?: (row: TData) => ReactNode;
   pageSize?: number;
   onRowHoverChange?: (row: TData | null) => void;
+  rowFocusRequest?: RowFocusRequest;
 }
 
 export function DataTable<TData>({
@@ -38,9 +51,12 @@ export function DataTable<TData>({
   renderExpandedRow,
   pageSize,
   onRowHoverChange,
+  rowFocusRequest,
 }: DataTableProps<TData>) {
   const expandable = renderExpandedRow !== undefined;
   const paginated = pageSize !== undefined;
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const [flashedRowId, setFlashedRowId] = useState<string | null>(null);
 
   const table = useReactTable({
     data: rows,
@@ -52,6 +68,33 @@ export function DataTable<TData>({
     getPaginationRowModel: paginated ? getPaginationRowModel() : undefined,
     initialState: paginated ? { pagination: { pageSize } } : undefined,
   });
+
+  useEffect(() => {
+    if (rowFocusRequest === undefined) return;
+    const { rowId } = rowFocusRequest;
+    const rowIndex = table
+      .getPrePaginationRowModel()
+      .rows.findIndex((tableRow) => tableRow.id === rowId);
+    if (rowIndex === -1) return;
+
+    if (paginated) {
+      table.setPageIndex(
+        Math.floor(rowIndex / table.getState().pagination.pageSize),
+      );
+    }
+    setFlashedRowId(rowId);
+    const frame = requestAnimationFrame(() => {
+      scrollAreaRef.current
+        ?.querySelector(`[data-row-id="${CSS.escape(rowId)}"]`)
+        ?.scrollIntoView({ block: "center" });
+    });
+    const timer = setTimeout(() => setFlashedRowId(null), 1500);
+    return () => {
+      cancelAnimationFrame(frame);
+      clearTimeout(timer);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rowFocusRequest?.requestId]);
 
   const handleRowKeyDown = (
     event: KeyboardEvent<HTMLTableRowElement>,
@@ -68,7 +111,7 @@ export function DataTable<TData>({
 
   return (
     <div className={styles.container}>
-      <div className={styles.tableScroll}>
+      <div className={styles.tableScroll} ref={scrollAreaRef}>
       <table className={styles.table}>
         <thead>
           {table.getHeaderGroups().map((headerGroup) => (
@@ -97,11 +140,14 @@ export function DataTable<TData>({
           {table.getRowModel().rows.map((tableRow) => (
             <Fragment key={tableRow.id}>
               <tr
-                className={
-                  expandable
-                    ? `${styles.dataRow} ${styles.expandableRow}`
-                    : styles.dataRow
-                }
+                data-row-id={tableRow.id}
+                className={[
+                  styles.dataRow,
+                  expandable ? styles.expandableRow : "",
+                  tableRow.id === flashedRowId ? styles.flashedRow : "",
+                ]
+                  .filter(Boolean)
+                  .join(" ")}
                 onClick={
                   expandable ? tableRow.getToggleExpandedHandler() : undefined
                 }

@@ -17,6 +17,10 @@ export function LogsDistributionCard({
   const highlightedHourMs = useDashboardUiStore(
     (state) => state.highlightedHourMs,
   );
+  const displayMode = useDashboardUiStore((state) => state.displayMode);
+  const requestHourFocus = useDashboardUiStore(
+    (state) => state.requestHourFocus,
+  );
   const points = buckets.map((bucket, bucketIndex) => ({
     x: bucket.startTime,
     y: bucket.count,
@@ -47,6 +51,11 @@ export function LogsDistributionCard({
           ariaLabel="Log count distribution over time"
           emptyMessage="No logs in the selected window."
           highlightedX={highlightedHourMs ?? undefined}
+          onPointSelect={
+            displayMode === "flat"
+              ? (point) => requestHourFocus(point.x)
+              : undefined
+          }
         />
       </div>
       <dl className={styles.rangeCaption}>

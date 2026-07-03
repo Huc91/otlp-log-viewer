@@ -70,6 +70,16 @@
   outline-offset: -2px;
 }
 
+.flashedRow {
+  animation: rowFlash 1.4s ease;
+}
+
+@keyframes rowFlash {
+  from {
+    background: color-mix(in oklab, var(--color-green-400) 35%, transparent);
+  }
+}
+
 .expandableRow {
   cursor: pointer;
   transition: background 0.1s ease;
