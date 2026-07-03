@@ -59,6 +59,10 @@
   pointer-events: none;
 }
 
+.tooltipValue {
+  font-weight: 700;
+}
+
 .tooltipSublabel {
   margin-top: 2px;
   font-size: 14px;

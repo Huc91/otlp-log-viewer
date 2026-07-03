@@ -100,7 +100,9 @@ export function BarChart({
               bottom: `${(barHeightOf(hoveredPoint) / CHART_HEIGHT) * 100}%`,
             }}
           >
-            <div>{hoveredPoint.label ?? String(hoveredPoint.y)}</div>
+            <div className={styles.tooltipValue}>
+              {hoveredPoint.label ?? String(hoveredPoint.y)}
+            </div>
             {hoveredPoint.sublabel !== undefined && (
               <div className={styles.tooltipSublabel}>
                 {hoveredPoint.sublabel}
