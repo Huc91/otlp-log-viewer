@@ -1,16 +1,80 @@
+.chartWrap {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  gap: 8px;
+}
+
+.chartCanvas {
+  position: relative;
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
 .chart {
   display: block;
   width: 100%;
-  height: auto;
+  height: 100%;
 }
 
 .bar {
   fill: var(--color-gray-300);
+  cursor: pointer;
   transition: fill 0.1s ease;
 }
 
 .bar:hover {
   fill: var(--color-green-400);
+}
+
+.tooltip {
+  --shift-x: -50%;
+  --shift-y: calc(-100% - 6px);
+  position: absolute;
+  /* default: centered above the bar tip; edge/height variants override the shifts */
+  transform: translate(var(--shift-x), var(--shift-y));
+  padding: 10px 14px;
+  border: 1px solid var(--color-gray-700);
+  border-radius: 6px;
+  background: var(--color-green-950);
+  color: var(--color-green-50);
+  font-size: 16px;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.tooltipSublabel {
+  margin-top: 2px;
+  font-size: 14px;
+  opacity: 0.7;
+}
+
+.tooltipBelowTip {
+  /* +100% = own height: top edge lands on the bar tip, box hangs below it */
+  --shift-y: calc(100% + 10px);
+}
+
+.tooltipLeftEdge {
+  --shift-x: 0px;
+}
+
+.tooltipRightEdge {
+  --shift-x: -100%;
+}
+
+.xAxis {
+  position: relative;
+  height: 15px;
+  font-size: 12px;
+  opacity: 0.6;
+}
+
+.xAxisLabel {
+  position: absolute;
+  transform: translateX(-50%);
+  white-space: nowrap;
 }
 
 .emptyNote {

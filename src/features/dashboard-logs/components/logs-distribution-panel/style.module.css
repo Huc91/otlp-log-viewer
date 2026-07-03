@@ -14,10 +14,6 @@
   min-height: 203px;
 }
 
-.chartArea svg {
-  height: 100%;
-}
-
 .title {
   margin: 0;
   font-size: 24px;
