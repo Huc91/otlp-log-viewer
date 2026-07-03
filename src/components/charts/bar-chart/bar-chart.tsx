@@ -51,6 +51,9 @@ export function BarChart({
     .range([0, CHART_WIDTH - BAR_WIDTH]);
   const yScale = scaleLinear().domain([0, maxValue]).range([0, CHART_HEIGHT]);
   const labelledPoints = points.filter((point) => point.xLabel !== undefined);
+  const highlightedPoint =
+    points.find((point) => point.x === highlightedX) ?? null;
+  const tooltipPoint = hoveredPoint ?? highlightedPoint;
 
   const barHeightOf = (point: BarChartPoint) =>
     point.y > 0 ? Math.max(yScale(point.y), BAR_WIDTH) : 0;
@@ -95,23 +98,23 @@ export function BarChart({
             );
           })}
         </svg>
-        {hoveredPoint !== null && (
+        {tooltipPoint !== null && (
           <div
             className={tooltipClassName(
-              barCenterPercent(hoveredPoint),
-              barHeightOf(hoveredPoint) / CHART_HEIGHT,
+              barCenterPercent(tooltipPoint),
+              barHeightOf(tooltipPoint) / CHART_HEIGHT,
             )}
             style={{
-              left: `${barCenterPercent(hoveredPoint)}%`,
-              bottom: `${(barHeightOf(hoveredPoint) / CHART_HEIGHT) * 100}%`,
+              left: `${barCenterPercent(tooltipPoint)}%`,
+              bottom: `${(barHeightOf(tooltipPoint) / CHART_HEIGHT) * 100}%`,
             }}
           >
             <div className={styles.tooltipValue}>
-              {hoveredPoint.label ?? String(hoveredPoint.y)}
+              {tooltipPoint.label ?? String(tooltipPoint.y)}
             </div>
-            {hoveredPoint.sublabel !== undefined && (
+            {tooltipPoint.sublabel !== undefined && (
               <div className={styles.tooltipSublabel}>
-                {hoveredPoint.sublabel}
+                {tooltipPoint.sublabel}
               </div>
             )}
           </div>
