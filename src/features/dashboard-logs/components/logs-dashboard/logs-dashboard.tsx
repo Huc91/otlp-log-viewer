@@ -1,6 +1,7 @@
 "use client";
 
 import { StatCard } from "@/components/stat-card/stat-card";
+import { DashboardSkeleton } from "../dashboard-skeleton/dashboard-skeleton";
 import { useIsDesktop } from "../../hooks/use-is-desktop";
 import { useLogsDashboard } from "../../hooks/use-logs-dashboard";
 import { useDashboardUiStore } from "../../stores";
@@ -15,7 +16,7 @@ export function LogsDashboard() {
     useDashboardUiStore((state) => state.isTableExpanded) && isDesktop;
 
   if (isPending) {
-    return <p className={styles.stateNote}>Fetching logs…</p>;
+    return <DashboardSkeleton />;
   }
 
   if (isError) {
@@ -40,15 +41,13 @@ export function LogsDashboard() {
       }
     >
       <LogTableCard rows={data.rows} groups={data.groups} />
-      {!isTableExpanded && (
-        <div className={styles.rightColumn}>
-          <LogsDistributionCard buckets={data.buckets} range={data.range} />
-          <StatCard
-            value={data.rows.length}
-            caption={`logs at ${data.fetchedAtLabel}`}
-          />
-        </div>
-      )}
+      <div className={styles.rightColumn} inert={isTableExpanded}>
+        <LogsDistributionCard buckets={data.buckets} range={data.range} />
+        <StatCard
+          value={data.rows.length}
+          caption={`logs at ${data.fetchedAtLabel}`}
+        />
+      </div>
     </div>
   );
 }

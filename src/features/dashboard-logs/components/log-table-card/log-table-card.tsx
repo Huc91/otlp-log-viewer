@@ -39,11 +39,11 @@ export function LogTableCard({ rows, groups }: LogTableCardProps) {
         </button>
       </div>
       {displayMode === "grouped" ? (
-        <div className={`${styles.tableArea} ${styles.scrollsWhole}`}>
+        <div key={displayMode} className={`${styles.tableArea} ${styles.scrollsWhole}`}>
           <GroupedLogList groups={groups} />
         </div>
       ) : (
-        <div className={styles.tableArea}>
+        <div key={displayMode} className={styles.tableArea}>
           <LogTable rows={rows} pageSize={12} showServiceColumns={isTableExpanded} />
         </div>
       )}

@@ -1,0 +1,88 @@
+.grid {
+  display: grid;
+  flex: 1;
+  min-height: 0;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+}
+
+@media (max-width: 960px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  border: 1px solid var(--color-gray-700);
+  border-radius: 8px;
+  padding: 24px;
+}
+
+.tableCard {
+  background: var(--color-green-100);
+  color: var(--color-green-900);
+}
+
+.rightColumn {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 32px;
+  min-height: 0;
+}
+
+.chartCard {
+  flex: 1;
+}
+
+.titleBlock,
+.controlsBlock,
+.rowBlock,
+.chartBlock,
+.statBlock {
+  border-radius: 6px;
+  background: color-mix(in oklab, currentColor 12%, transparent);
+}
+
+.titleBlock {
+  width: 35%;
+  height: 28px;
+}
+
+.controlsBlock {
+  width: 55%;
+  height: 20px;
+  margin-bottom: 6px;
+}
+
+.rowBlock {
+  height: 34px;
+}
+
+.chartBlock {
+  flex: 1;
+  min-height: 220px;
+}
+
+.statBlock {
+  height: 96px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .titleBlock,
+  .controlsBlock,
+  .rowBlock,
+  .chartBlock,
+  .statBlock {
+    animation: pulse 1.4s ease-in-out infinite;
+  }
+}
+
+@keyframes pulse {
+  50% {
+    opacity: 0.45;
+  }
+}

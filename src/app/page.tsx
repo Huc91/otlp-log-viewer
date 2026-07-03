@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { connection } from "next/server";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
+import { DashboardSkeleton } from "@/features/dashboard-logs/components/dashboard-skeleton/dashboard-skeleton";
 import { LogsDashboard } from "@/features/dashboard-logs/components/logs-dashboard/logs-dashboard";
 import {
   getLogsDashboardData,
@@ -13,7 +14,7 @@ export default function DashboardPage() {
   return (
     <main className={styles.main}>
       <h1 className={styles.pageTitle}>Dashboard</h1>
-      <Suspense fallback={<p className={styles.loadingNote}>Fetching logs…</p>}>
+      <Suspense fallback={<DashboardSkeleton />}>
         <PrefetchedDashboard />
       </Suspense>
     </main>

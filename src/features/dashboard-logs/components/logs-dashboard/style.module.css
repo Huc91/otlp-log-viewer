@@ -6,12 +6,27 @@
   gap: 32px;
 }
 
+@media (prefers-reduced-motion: no-preference) {
+  .grid {
+    transition: grid-template-columns 0.3s ease, gap 0.3s ease;
+  }
+
+  .rightColumn {
+    transition: opacity 0.2s ease;
+  }
+}
+
 .grid > * {
   min-width: 0;
 }
 
 .gridExpanded {
-  grid-template-columns: 1fr;
+  grid-template-columns: 1fr 0fr;
+  gap: 0;
+}
+
+.gridExpanded .rightColumn {
+  opacity: 0;
 }
 
 @media (max-width: 960px) {
@@ -26,6 +41,8 @@
   justify-content: space-between;
   gap: 32px;
   min-height: 0;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .stateNote {

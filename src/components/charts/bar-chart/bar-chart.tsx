@@ -65,12 +65,13 @@ export function BarChart({
           aria-label={ariaLabel}
           className={styles.chart}
         >
-          {points.map((point) => {
+          {points.map((point, pointIndex) => {
             const barHeight = barHeightOf(point);
             return (
               <rect
                 key={point.x}
                 className={styles.bar}
+                style={{ animationDelay: `${pointIndex * 15}ms` }}
                 x={xScale(point.x)}
                 y={CHART_HEIGHT - barHeight}
                 width={BAR_WIDTH}
