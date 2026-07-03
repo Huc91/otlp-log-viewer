@@ -1,11 +1,11 @@
 "use client";
 
-import { useDisplayModeStore } from "@/features/dashboard-logs/stores";
+import { useDashboardUiStore } from "@/features/dashboard-logs/stores";
 import styles from "./style.module.css";
 
 export function DisplayModeToggle() {
-  const displayMode = useDisplayModeStore((state) => state.displayMode);
-  const toggleDisplayMode = useDisplayModeStore(
+  const displayMode = useDashboardUiStore((state) => state.displayMode);
+  const toggleDisplayMode = useDashboardUiStore(
     (state) => state.toggleDisplayMode,
   );
 

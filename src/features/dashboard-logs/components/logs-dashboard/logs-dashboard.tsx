@@ -3,12 +3,16 @@
 import { StatCard } from "@/components/stat-card/stat-card";
 import { formatClock } from "@/lib/format";
 import { useLogsDashboard } from "../../hooks/use-logs-dashboard";
+import { useDashboardUiStore } from "../../stores";
 import { LogTablePanel } from "../log-table-panel/log-table-panel";
 import { LogsDistributionPanel } from "../logs-distribution-panel/logs-distribution-panel";
 import styles from "./style.module.css";
 
 export function LogsDashboard() {
   const { data, isPending, isError, refetch } = useLogsDashboard();
+  const isTableExpanded = useDashboardUiStore(
+    (state) => state.isTableExpanded,
+  );
 
   if (isPending) {
     return <p className={styles.stateNote}>Fetching logs…</p>;
@@ -30,15 +34,21 @@ export function LogsDashboard() {
   }
 
   return (
-    <div className={styles.grid}>
+    <div
+      className={
+        isTableExpanded ? `${styles.grid} ${styles.gridExpanded}` : styles.grid
+      }
+    >
       <LogTablePanel rows={data.rows} groups={data.groups} />
-      <div className={styles.rightColumn}>
-        <LogsDistributionPanel buckets={data.buckets} range={data.range} />
-        <StatCard
-          value={data.rows.length}
-          caption={`logs at ${formatClock(new Date(data.fetchedAtMs))}`}
-        />
-      </div>
+      {!isTableExpanded && (
+        <div className={styles.rightColumn}>
+          <LogsDistributionPanel buckets={data.buckets} range={data.range} />
+          <StatCard
+            value={data.rows.length}
+            caption={`logs at ${formatClock(new Date(data.fetchedAtMs))}`}
+          />
+        </div>
+      )}
     </div>
   );
 }

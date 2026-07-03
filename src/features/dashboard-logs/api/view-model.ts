@@ -24,6 +24,13 @@ export interface ServiceIdentity {
   version: string;
 }
 
+export interface ScopeIdentity {
+  key: string;
+  name: string;
+  version: string;
+  attributes: Record<string, AttributeValue>;
+}
+
 export interface LogRow {
   id: string;
   timestampMs: number;
@@ -33,7 +40,9 @@ export interface LogRow {
   body: string;
   bodyKind: BodyKind;
   attributes: Record<string, AttributeValue>;
+  resourceAttributes: Record<string, AttributeValue>;
   service: ServiceIdentity;
+  scope: ScopeIdentity;
 }
 
 export interface ClusteredLogsByHour {
@@ -45,6 +54,19 @@ export interface ClusteredLogsByHour {
 
 export interface ServiceGroup {
   service: ServiceIdentity;
+  resourceAttributes: Record<string, AttributeValue>;
+  rows: LogRow[];
+  scopeGroups: ScopeGroup[];
+}
+
+export interface NamespaceGroup {
+  namespace: string;
+  rows: LogRow[];
+  serviceGroups: ServiceGroup[];
+}
+
+export interface ScopeGroup {
+  scope: ScopeIdentity;
   rows: LogRow[];
 }
 
@@ -56,7 +78,7 @@ export interface TimeRange {
 export interface LogsDashboardData {
   rows: LogRow[];
   buckets: ClusteredLogsByHour[];
-  groups: ServiceGroup[];
+  groups: NamespaceGroup[];
   range: TimeRange;
   fetchedAtMs: number;
 }

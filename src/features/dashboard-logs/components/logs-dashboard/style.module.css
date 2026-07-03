@@ -6,6 +6,16 @@
   gap: 32px;
 }
 
+/* grid items default to min-width auto and refuse to shrink below their
+   content, overflowing small viewports */
+.grid > * {
+  min-width: 0;
+}
+
+.gridExpanded {
+  grid-template-columns: 1fr;
+}
+
 @media (max-width: 960px) {
   .grid {
     grid-template-columns: 1fr;
@@ -16,7 +26,7 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  gap: 56px;
+  gap: 32px;
   min-height: 0;
 }
 

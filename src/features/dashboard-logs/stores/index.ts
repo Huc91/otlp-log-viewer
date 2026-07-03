@@ -2,15 +2,20 @@ import { create } from "zustand";
 
 export type DisplayMode = "flat" | "grouped";
 
-interface DisplayModeState {
+interface DashboardUiState {
   displayMode: DisplayMode;
+  isTableExpanded: boolean;
   toggleDisplayMode: () => void;
+  toggleTableExpanded: () => void;
 }
 
-export const useDisplayModeStore = create<DisplayModeState>()((set) => ({
+export const useDashboardUiStore = create<DashboardUiState>()((set) => ({
   displayMode: "flat",
+  isTableExpanded: false,
   toggleDisplayMode: () =>
     set((state) => ({
       displayMode: state.displayMode === "flat" ? "grouped" : "flat",
     })),
+  toggleTableExpanded: () =>
+    set((state) => ({ isTableExpanded: !state.isTableExpanded })),
 }));

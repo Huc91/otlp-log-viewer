@@ -30,3 +30,19 @@ export const logColumns: ColumnDef<LogRow>[] = [
     ),
   },
 ];
+
+export const expandedLogColumns: ColumnDef<LogRow>[] = [
+  ...logColumns,
+  {
+    id: "namespace",
+    accessorFn: (row) => row.service.namespace,
+    header: "Namespace",
+    meta: { fixedWidth: 160 },
+  },
+  {
+    id: "service",
+    accessorFn: (row) => row.service.name,
+    header: "Service",
+    meta: { fixedWidth: 160 },
+  },
+];

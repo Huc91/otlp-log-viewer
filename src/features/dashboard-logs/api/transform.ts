@@ -1,9 +1,18 @@
-import type { ExportLogsServiceRequest, Resource } from "./types";
+import type {
+  ExportLogsServiceRequest,
+  InstrumentationScope,
+  KeyValue,
+  Resource,
+} from "./types";
 import {
   SEVERITY_BANDS,
   type AttributeValue,
+  type BodyKind,
   type ClusteredLogsByHour,
   type LogRow,
+  type NamespaceGroup,
+  type ScopeGroup,
+  type ScopeIdentity,
   type ServiceGroup,
   type ServiceIdentity,
   type SeverityBand,
@@ -20,8 +29,10 @@ function nanoStringToMs(nanoStr: string): number {
   return Number(BigInt(nanoStr) / 1_000_000n);
 }
 
-function detectBodyKind(text: string | undefined): "text" | "json" {
+function detectBodyKind(text: string | undefined): BodyKind {
   if (!text) return "text";
+  // "  at fn (file:1:2)" lines are the stack-trace signature
+  if (/\n\s+at\s/.test(text)) return "stacktrace";
   // cheap precheck avoids running JSON.parse (expensive w/ try-catch) on
   // the ~80% of bodies that are plain text and can't possibly be JSON
   const c = text.charCodeAt(0);
@@ -32,6 +43,35 @@ function detectBodyKind(text: string | undefined): "text" | "json" {
   } catch {
     return "text";
   }
+}
+
+function extractAttributes(
+  keyValues: KeyValue[] | undefined,
+): Record<string, AttributeValue> {
+  const attributes: Record<string, AttributeValue> = {};
+  keyValues?.forEach((attribute) => {
+    if (!attribute.key) return;
+    attributes[attribute.key] =
+      attribute.value?.stringValue ??
+      attribute.value?.intValue ??
+      attribute.value?.boolValue ??
+      attribute.value?.doubleValue ??
+      "";
+  });
+  return attributes;
+}
+
+function extractScopeIdentity(
+  scope: InstrumentationScope | undefined,
+): ScopeIdentity {
+  const name = scope?.name ?? "";
+  const version = scope?.version ?? "";
+  return {
+    key: `${name}@${version}`,
+    name: name || "unknown scope",
+    version,
+    attributes: extractAttributes(scope?.attributes),
+  };
 }
 
 // severityNumber bands per the OTLP data model: 1-4 TRACE, 5-8 DEBUG, 9-12 INFO,
@@ -67,8 +107,11 @@ export function flattenLogs(request: ExportLogsServiceRequest): LogRow[] {
 
   request.resourceLogs?.forEach((resourceLog, resourceIndex) => {
     const service = extractServiceIdentity(resourceLog.resource);
+    const resourceAttributes = extractAttributes(resourceLog.resource?.attributes);
 
     resourceLog.scopeLogs?.forEach((scopeLog, scopeIndex) => {
+      const scope = extractScopeIdentity(scopeLog.scope);
+
       scopeLog.logRecords?.forEach((logRecord, recordIndex) => {
         const nano = logRecord.timeUnixNano ?? logRecord.observedTimeUnixNano;
         if (nano === undefined) return;
@@ -76,17 +119,6 @@ export function flattenLogs(request: ExportLogsServiceRequest): LogRow[] {
         const bodyText = logRecord.body?.stringValue ?? "";
         const severityNumber = logRecord.severityNumber ?? 0;
         const severityBand = severityBandOf(severityNumber);
-
-        const attributes: Record<string, AttributeValue> = {};
-        logRecord.attributes?.forEach((attribute) => {
-          if (!attribute.key) return;
-          attributes[attribute.key] =
-            attribute.value?.stringValue ??
-            attribute.value?.intValue ??
-            attribute.value?.boolValue ??
-            attribute.value?.doubleValue ??
-            "";
-        });
 
         rows.push({
           id: buildLogRowId(resourceIndex, scopeIndex, recordIndex),
@@ -96,8 +128,10 @@ export function flattenLogs(request: ExportLogsServiceRequest): LogRow[] {
           severityLabel: severityBand,
           body: bodyText,
           bodyKind: detectBodyKind(bodyText),
-          attributes,
+          attributes: extractAttributes(logRecord.attributes),
+          resourceAttributes,
           service,
+          scope,
         });
       });
     });
@@ -108,20 +142,18 @@ export function flattenLogs(request: ExportLogsServiceRequest): LogRow[] {
 
 const HOUR_IN_MS = 3_600_000;
 
-export function clusterLogsByHour(
-  rows: LogRow[],
-  rangeHours: number = 24,
-): ClusteredLogsByHour[] {
+export function clusterLogsByHour(rows: LogRow[]): ClusteredLogsByHour[] {
+  const newestLog = rows[0];
+  const oldestLog = rows[rows.length - 1];
+  if (newestLog === undefined || oldestLog === undefined) return [];
 
-  const newestMs = rows[0]?.timestampMs ?? Date.now();
-  const newestBucketStartMs = Math.floor(newestMs / HOUR_IN_MS) * HOUR_IN_MS;
-  const endMs = newestBucketStartMs + HOUR_IN_MS;
-  const startMs = endMs - rangeHours * HOUR_IN_MS;
+  const startMs = Math.floor(oldestLog.timestampMs / HOUR_IN_MS) * HOUR_IN_MS;
+  const endMs =
+    Math.floor(newestLog.timestampMs / HOUR_IN_MS) * HOUR_IN_MS + HOUR_IN_MS;
 
   const clustersDictionary: Record<string, ClusteredLogsByHour> = {};
 
-  for (let hour = 0; hour < rangeHours; hour++) {
-    const startTime = startMs + hour * HOUR_IN_MS;    
+  for (let startTime = startMs; startTime < endMs; startTime += HOUR_IN_MS) {
     clustersDictionary[hourKeyOf(startTime)] = {
       startTime,
       endTime: startTime + HOUR_IN_MS,
@@ -140,18 +172,49 @@ export function clusterLogsByHour(
   return Object.values(clustersDictionary);
 }
 
-// "2026-07-03T11:00" — the log's timestamp truncated to its hour, in UTC
 function hourKeyOf(timestampMs: number): string {
   return new Date(timestampMs).toISOString().slice(0, 13) + ":00";
 }
 
-/**
- * Rows → one group per service, keyed by ServiceIdentity.key.
- *
- * Stable, intentional group order (e.g. by row count desc) — the collapsible
- * grouped view renders in this order.
- */
-export function groupByService(rows: LogRow[]): ServiceGroup[] {
-  void rows;
-  return []; // TODO(luca)
+function pushInto(map: Map<string, LogRow[]>, key: string, row: LogRow): void {
+  const existing = map.get(key);
+  if (existing) existing.push(row);
+  else map.set(key, [row]);
+}
+
+// namespace → service → scope, busiest groups first
+export function groupByNamespace(rows: LogRow[]): NamespaceGroup[] {
+  const byNamespace = new Map<string, LogRow[]>();
+  rows.forEach((row) => pushInto(byNamespace, row.service.namespace, row));
+
+  return [...byNamespace.entries()]
+    .map(([namespace, namespaceRows]) => ({
+      namespace,
+      rows: namespaceRows,
+      serviceGroups: buildServiceGroups(namespaceRows),
+    }))
+    .sort((a, b) => b.rows.length - a.rows.length);
+}
+
+function buildServiceGroups(rows: LogRow[]): ServiceGroup[] {
+  const byService = new Map<string, LogRow[]>();
+  rows.forEach((row) => pushInto(byService, row.service.key, row));
+
+  return [...byService.values()]
+    .map((serviceRows) => ({
+      service: serviceRows[0].service,
+      resourceAttributes: serviceRows[0].resourceAttributes,
+      rows: serviceRows,
+      scopeGroups: buildScopeGroups(serviceRows),
+    }))
+    .sort((a, b) => b.rows.length - a.rows.length);
+}
+
+function buildScopeGroups(rows: LogRow[]): ScopeGroup[] {
+  const byScope = new Map<string, LogRow[]>();
+  rows.forEach((row) => pushInto(byScope, row.scope.key, row));
+
+  return [...byScope.values()]
+    .map((scopeRows) => ({ scope: scopeRows[0].scope, rows: scopeRows }))
+    .sort((a, b) => b.rows.length - a.rows.length);
 }

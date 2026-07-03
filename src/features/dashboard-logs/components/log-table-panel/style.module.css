@@ -37,6 +37,32 @@
   font-size: 16px;
 }
 
-.expandHint {
-  opacity: 0.75;
+.expandButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--color-green-900);
+  cursor: pointer;
+  transition: background 0.1s ease;
+}
+
+.expandButton:hover {
+  background: color-mix(in oklab, var(--color-green-400) 20%, transparent);
+}
+
+.expandButton:focus-visible {
+  outline: 2px solid var(--color-green-400);
+  outline-offset: 2px;
+}
+
+/* expand exists to take over the chart column; below the grid breakpoint the
+   layout is single-column already and the extra columns cannot fit */
+@media (max-width: 960px) {
+  .expandButton {
+    display: none;
+  }
 }
