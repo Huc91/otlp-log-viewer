@@ -1,5 +1,4 @@
 import { BarChart } from "@/components/charts/bar-chart/bar-chart";
-import { formatClock, formatDateTime } from "@/lib/format";
 import type { ClusteredLogsByHour, TimeRange } from "@/features/dashboard-logs/api/view-model";
 import styles from "./style.module.css";
 
@@ -16,17 +15,13 @@ export function LogsDistributionCard({
     x: bucket.startTime,
     y: bucket.count,
     label: `${bucket.count} logs`,
-    sublabel: `${formatDateTime(new Date(bucket.startTime))} - ${formatClock(
-      new Date(bucket.endTime),
-    )}`,
-    // a tick every 4h
+    sublabel: bucket.rangeLabel,
     xLabel:
       bucketIndex % 4 === 0 || bucketIndex === buckets.length - 1
-        ? formatClock(new Date(bucket.startTime))
+        ? bucket.startLabel
         : undefined,
   }));
 
-  // clock-aligned bars overhang the sliding 24h caption window
   const firstBucket = buckets[0];
   const lastBucket = buckets[buckets.length - 1];
   const xDomain: [number, number] =
@@ -49,13 +44,9 @@ export function LogsDistributionCard({
       </div>
       <dl className={styles.rangeCaption}>
         <dt className={styles.rangeLabel}>from</dt>
-        <dd className={styles.rangeValue}>
-          {formatDateTime(new Date(range.fromMs))}
-        </dd>
+        <dd className={styles.rangeValue}>{range.fromLabel}</dd>
         <dt className={styles.rangeLabel}>to</dt>
-        <dd className={styles.rangeValue}>
-          {formatDateTime(new Date(range.toMs))}
-        </dd>
+        <dd className={styles.rangeValue}>{range.toLabel}</dd>
       </dl>
     </section>
   );

@@ -9,6 +9,7 @@ function makeRow(timestampMs: number, id = String(timestampMs)): LogRow {
   return {
     id,
     timestampMs,
+    time: "00:00:00",
     severityNumber: 9,
     severityBand: "INFO",
     severityLabel: "INFO",
@@ -38,13 +39,20 @@ describe("flattenLogs", () => {
             scope: { name: "mock", version: "1.2.3" },
             logRecords: [
               {
-                // nanosecond string beyond Number.MAX_SAFE_INTEGER
                 timeUnixNano: "1782925580937000000",
                 severityNumber: 21,
                 body: { stringValue: "boom" },
                 attributes: [
                   { key: "http.status_code", value: { intValue: 500 } },
                   { key: "http.method", value: { stringValue: "PUT" } },
+                  {
+                    key: "process.command_args",
+                    value: {
+                      arrayValue: {
+                        values: [{ stringValue: "node" }, { stringValue: "server.js" }],
+                      },
+                    },
+                  },
                 ],
               },
               {
@@ -121,6 +129,7 @@ describe("flattenLogs", () => {
     expect(fatalRow?.attributes).toEqual({
       "http.status_code": 500,
       "http.method": "PUT",
+      "process.command_args": "node, server.js",
     });
     expect(fatalRow?.resourceAttributes.region).toBe("us-east-1");
   });
@@ -157,7 +166,6 @@ describe("flattenLogs", () => {
 });
 
 describe("clusterLogsByHour", () => {
-  // fetch-like scenario: data spans 14:44 yesterday → 14:44 today
   const newestMs = Date.UTC(2026, 6, 3, 14, 44);
   const oldestMs = Date.UTC(2026, 6, 2, 14, 44);
 
@@ -171,7 +179,6 @@ describe("clusterLogsByHour", () => {
   });
 
   it("drops no rows: bucket counts sum to the row count", () => {
-    // newest-first, matching the order flattenLogs produces
     const rows = Array.from({ length: 50 }, (_, index) =>
       makeRow(newestMs - index * ((newestMs - oldestMs) / 49), String(index)),
     );

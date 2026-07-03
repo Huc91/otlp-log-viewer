@@ -1,0 +1,44 @@
+.errorPage {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 48px 32px;
+  text-align: center;
+}
+
+.title {
+  margin: 0;
+  font-size: 32px;
+  font-weight: 400;
+}
+
+.note {
+  margin: 0;
+  opacity: 0.6;
+}
+
+.retryButton {
+  margin-top: 12px;
+  padding: 8px 20px;
+  border: 1px solid var(--color-gray-700);
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  transition: border-color 0.1s ease, color 0.1s ease;
+}
+
+.retryButton:hover,
+.retryButton:focus-visible {
+  border-color: var(--color-green-400);
+  color: var(--color-green-400);
+}
+
+.retryButton:focus-visible {
+  outline: 2px solid var(--color-green-400);
+  outline-offset: 2px;
+}

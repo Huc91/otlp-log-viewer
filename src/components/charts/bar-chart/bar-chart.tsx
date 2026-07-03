@@ -23,7 +23,6 @@ interface BarChartProps {
   emptyMessage: string;
 }
 
-// keeps the tooltip inside the canvas near the edges and on tall bars
 function tooltipClassName(centerPercent: number, barFraction: number): string {
   const classNames = [styles.tooltip];
   if (barFraction > 0.75) classNames.push(styles.tooltipBelowTip);
@@ -32,8 +31,6 @@ function tooltipClassName(centerPercent: number, barFraction: number): string {
   return classNames.join(" ");
 }
 
-// axis labels and tooltip are HTML, not SVG <text>: the SVG stretches with
-// preserveAspectRatio="none", which would distort text glyphs
 export function BarChart({
   points,
   xDomain,
@@ -64,23 +61,32 @@ export function BarChart({
         <svg
           viewBox={`0 0 ${CHART_WIDTH} ${CHART_HEIGHT}`}
           preserveAspectRatio="none"
-          role="img"
+          role="group"
           aria-label={ariaLabel}
           className={styles.chart}
         >
-          {points.map((point) => (
-            <rect
-              key={point.x}
-              className={styles.bar}
-              x={xScale(point.x)}
-              y={CHART_HEIGHT - barHeightOf(point)}
-              width={BAR_WIDTH}
-              height={barHeightOf(point)}
-              rx={BAR_WIDTH / 2}
-              onMouseEnter={() => setHoveredPoint(point)}
-              onMouseLeave={() => setHoveredPoint(null)}
-            />
-          ))}
+          {points.map((point) => {
+            const barHeight = barHeightOf(point);
+            return (
+              <rect
+                key={point.x}
+                className={styles.bar}
+                x={xScale(point.x)}
+                y={CHART_HEIGHT - barHeight}
+                width={BAR_WIDTH}
+                height={barHeight}
+                rx={BAR_WIDTH / 2}
+                tabIndex={0}
+                aria-label={[point.label ?? String(point.y), point.sublabel]
+                  .filter(Boolean)
+                  .join(", ")}
+                onMouseEnter={() => setHoveredPoint(point)}
+                onMouseLeave={() => setHoveredPoint(null)}
+                onFocus={() => setHoveredPoint(point)}
+                onBlur={() => setHoveredPoint(null)}
+              />
+            );
+          })}
         </svg>
         {hoveredPoint !== null && (
           <div

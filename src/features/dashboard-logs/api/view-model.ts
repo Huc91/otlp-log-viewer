@@ -34,6 +34,7 @@ export interface ScopeIdentity {
 export interface LogRow {
   id: string;
   timestampMs: number;
+  time: string;
   severityNumber: number;
   severityBand: SeverityBand;
   severityLabel: string;
@@ -49,7 +50,8 @@ export interface ClusteredLogsByHour {
   startTime: number;
   endTime: number;
   count: number;
-  idsOfLogs: string[];
+  startLabel: string;
+  rangeLabel: string;
 }
 
 export interface ServiceGroup {
@@ -73,6 +75,8 @@ export interface ScopeGroup {
 export interface TimeRange {
   fromMs: number;
   toMs: number;
+  fromLabel: string;
+  toLabel: string;
 }
 
 export interface LogsDashboardData {
@@ -81,4 +85,5 @@ export interface LogsDashboardData {
   groups: NamespaceGroup[];
   range: TimeRange;
   fetchedAtMs: number;
+  fetchedAtLabel: string;
 }

@@ -83,7 +83,7 @@ function ScopeSection({ group }: { group: ScopeGroup }) {
       </summary>
       <div className={styles.groupChildren}>
         <AttributeList attributes={group.scope.attributes} />
-        <LogTable rows={group.rows} pageSize={group.rows.length} />
+        <LogTable rows={group.rows} />
       </div>
     </details>
   );

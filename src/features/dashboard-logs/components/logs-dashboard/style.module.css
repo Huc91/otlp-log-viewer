@@ -6,8 +6,6 @@
   gap: 32px;
 }
 
-/* grid items default to min-width auto and refuse to shrink below their
-   content, overflowing small viewports */
 .grid > * {
   min-width: 0;
 }

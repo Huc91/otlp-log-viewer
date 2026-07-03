@@ -14,8 +14,6 @@ import {
 import styles from "./style.module.css";
 
 declare module "@tanstack/react-table" {
-  // TanStack merges a default `size: 150` into every columnDef, so `size`
-  // can't express "no explicit width"; meta.fixedWidth can.
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   interface ColumnMeta<TData extends RowData, TValue> {
     fixedWidth?: number;
@@ -72,7 +70,7 @@ export function DataTable<TData>({
       <table className={styles.table}>
         <thead>
           {table.getHeaderGroups().map((headerGroup) => (
-            <tr key={headerGroup.id} className={styles.headerRow}>
+            <tr key={headerGroup.id}>
               {headerGroup.headers.map((header) => (
                 <th
                   key={header.id}

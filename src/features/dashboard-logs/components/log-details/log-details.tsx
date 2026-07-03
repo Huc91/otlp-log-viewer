@@ -5,17 +5,14 @@ interface LogDetailsProps {
   row: LogRow;
 }
 
-// Draft: bodyKind-aware rendering (pretty JSON, preformatted stack traces)
-// lands together with the transform algorithm.
 export function LogDetails({ row }: LogDetailsProps) {
   const attributeEntries = Object.entries(row.attributes).sort(([leftKey], [rightKey]) =>
     leftKey.localeCompare(rightKey),
   );
-  const body = formatBody(row.body, row.bodyKind);
 
   return (
     <div className={styles.details}>
-      <pre className={styles.body}>{body}</pre>
+      <pre className={styles.body}>{row.body}</pre>
       {attributeEntries.length > 0 && (
         <dl className={styles.attributeList}>
           {attributeEntries.map(([key, value]) => (
@@ -28,14 +25,4 @@ export function LogDetails({ row }: LogDetailsProps) {
       )}
     </div>
   );
-}
-
-function formatBody(body: string, bodyKind: LogRow["bodyKind"]): string {
-  if (bodyKind !== "json") return body;
-
-  try {
-    return JSON.stringify(JSON.parse(body), null, 2);
-  } catch {
-    return body;
-  }
 }

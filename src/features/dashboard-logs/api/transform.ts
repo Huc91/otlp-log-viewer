@@ -1,9 +1,11 @@
 import type {
+  AnyValue,
   ExportLogsServiceRequest,
   InstrumentationScope,
   KeyValue,
   Resource,
 } from "./types";
+import { formatHourMinute, formatDateTime, formatTime } from "@/lib/format";
 import {
   SEVERITY_BANDS,
   type AttributeValue,
@@ -23,15 +25,47 @@ function buildLogRowId(resourceIndex: number, scopeIndex: number, recordIndex: n
   return `${resourceIndex}-${scopeIndex}-${recordIndex}`;
 }
 
-function nanoStringToMs(nanoStr: string): number {
+function nanoStringToMs(nanoStr: string): number | null {
   // timeUnixNano arrives as a string (exceeds safe integer range as Number),
   // convert via BigInt to avoid precision loss, then divide down to ms.
-  return Number(BigInt(nanoStr) / 1_000_000n);
+  try {
+    const timestampMs = Number(BigInt(nanoStr) / 1_000_000n);
+    return timestampMs > 0 ? timestampMs : null;
+  } catch {
+    return null;
+  }
+}
+
+export function unwrapAnyValue(value: AnyValue | undefined): AttributeValue {
+  if (!value) return "";
+  if (value.stringValue != null) return value.stringValue;
+  if (value.intValue != null) return value.intValue;
+  if (value.doubleValue != null) return value.doubleValue;
+  if (value.boolValue != null) return value.boolValue;
+  if (value.arrayValue?.values) {
+    return value.arrayValue.values
+      .map((item) => String(unwrapAnyValue(item)))
+      .join(", ");
+  }
+  if (value.kvlistValue?.values) {
+    return value.kvlistValue.values
+      .map((entry) => `${entry.key ?? ""}=${String(unwrapAnyValue(entry.value))}`)
+      .join(", ");
+  }
+  if (value.bytesValue != null) return value.bytesValue;
+  return "";
+}
+
+function prettyPrintJson(text: string): string {
+  try {
+    return JSON.stringify(JSON.parse(text), null, 2);
+  } catch {
+    return text;
+  }
 }
 
 function detectBodyKind(text: string | undefined): BodyKind {
   if (!text) return "text";
-  // "  at fn (file:1:2)" lines are the stack-trace signature
   if (/\n\s+at\s/.test(text)) return "stacktrace";
   // cheap precheck avoids running JSON.parse (expensive w/ try-catch) on
   // the ~80% of bodies that are plain text and can't possibly be JSON
@@ -51,12 +85,7 @@ function extractAttributes(
   const attributes: Record<string, AttributeValue> = {};
   keyValues?.forEach((attribute) => {
     if (!attribute.key) return;
-    attributes[attribute.key] =
-      attribute.value?.stringValue ??
-      attribute.value?.intValue ??
-      attribute.value?.boolValue ??
-      attribute.value?.doubleValue ??
-      "";
+    attributes[attribute.key] = unwrapAnyValue(attribute.value);
   });
   return attributes;
 }
@@ -74,8 +103,6 @@ function extractScopeIdentity(
   };
 }
 
-// severityNumber bands per the OTLP data model: 1-4 TRACE, 5-8 DEBUG, 9-12 INFO,
-// 13-16 WARN, 17-20 ERROR, 21-24 FATAL; 0 / out-of-range → UNSPECIFIED.
 function severityBandOf(severityNumber: number): SeverityBand {
   if (severityNumber < 1 || severityNumber > 24) return "UNSPECIFIED";
   return SEVERITY_BANDS[Math.ceil(severityNumber / 4)];
@@ -115,19 +142,23 @@ export function flattenLogs(request: ExportLogsServiceRequest): LogRow[] {
       scopeLog.logRecords?.forEach((logRecord, recordIndex) => {
         const nano = logRecord.timeUnixNano ?? logRecord.observedTimeUnixNano;
         if (nano === undefined) return;
+        const timestampMs = nanoStringToMs(nano);
+        if (timestampMs === null) return;
 
-        const bodyText = logRecord.body?.stringValue ?? "";
+        const bodyText = String(unwrapAnyValue(logRecord.body));
         const severityNumber = logRecord.severityNumber ?? 0;
         const severityBand = severityBandOf(severityNumber);
+        const bodyKind = detectBodyKind(bodyText);
 
         rows.push({
           id: buildLogRowId(resourceIndex, scopeIndex, recordIndex),
-          timestampMs: nanoStringToMs(nano),
+          timestampMs,
+          time: formatTime(new Date(timestampMs)),
           severityNumber,
           severityBand,
           severityLabel: severityBand,
-          body: bodyText,
-          bodyKind: detectBodyKind(bodyText),
+          body: bodyKind === "json" ? prettyPrintJson(bodyText) : bodyText,
+          bodyKind,
           attributes: extractAttributes(logRecord.attributes),
           resourceAttributes,
           service,
@@ -154,11 +185,13 @@ export function clusterLogsByHour(rows: LogRow[]): ClusteredLogsByHour[] {
   const clustersDictionary: Record<string, ClusteredLogsByHour> = {};
 
   for (let startTime = startMs; startTime < endMs; startTime += HOUR_IN_MS) {
+    const endTime = startTime + HOUR_IN_MS;
     clustersDictionary[hourKeyOf(startTime)] = {
       startTime,
-      endTime: startTime + HOUR_IN_MS,
+      endTime,
       count: 0,
-      idsOfLogs: [],
+      startLabel: formatHourMinute(new Date(startTime)),
+      rangeLabel: `${formatDateTime(new Date(startTime))} - ${formatHourMinute(new Date(endTime))}`,
     };
   }
 
@@ -166,7 +199,6 @@ export function clusterLogsByHour(rows: LogRow[]): ClusteredLogsByHour[] {
     const cluster = clustersDictionary[hourKeyOf(row.timestampMs)];
     if (!cluster) return;
     cluster.count += 1;
-    cluster.idsOfLogs.push(row.id);
   });
 
   return Object.values(clustersDictionary);
@@ -182,7 +214,6 @@ function pushInto(map: Map<string, LogRow[]>, key: string, row: LogRow): void {
   else map.set(key, [row]);
 }
 
-// namespace → service → scope, busiest groups first
 export function groupByNamespace(rows: LogRow[]): NamespaceGroup[] {
   const byNamespace = new Map<string, LogRow[]>();
   rows.forEach((row) => pushInto(byNamespace, row.service.namespace, row));
@@ -203,11 +234,24 @@ function buildServiceGroups(rows: LogRow[]): ServiceGroup[] {
   return [...byService.values()]
     .map((serviceRows) => ({
       service: serviceRows[0].service,
-      resourceAttributes: serviceRows[0].resourceAttributes,
+      resourceAttributes: mergeResourceAttributes(serviceRows),
       rows: serviceRows,
       scopeGroups: buildScopeGroups(serviceRows),
     }))
     .sort((a, b) => b.rows.length - a.rows.length);
+}
+
+function mergeResourceAttributes(rows: LogRow[]): Record<string, AttributeValue> {
+  const merged: Record<string, AttributeValue> = {};
+  rows.forEach((row) => {
+    Object.entries(row.resourceAttributes).forEach(([key, value]) => {
+      const existing = merged[key];
+      if (existing === undefined) merged[key] = value;
+      else if (existing !== value && !String(existing).includes(String(value)))
+        merged[key] = `${String(existing)}, ${String(value)}`;
+    });
+  });
+  return merged;
 }
 
 function buildScopeGroups(rows: LogRow[]): ScopeGroup[] {

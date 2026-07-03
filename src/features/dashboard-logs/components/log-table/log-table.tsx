@@ -13,7 +13,7 @@ interface LogTableProps {
 
 export function LogTable({
   rows,
-  pageSize = 12,
+  pageSize,
   showServiceColumns = false,
 }: LogTableProps) {
   return (
@@ -21,7 +21,7 @@ export function LogTable({
       rows={rows}
       columns={showServiceColumns ? expandedLogColumns : logColumns}
       getRowId={(row) => row.id}
-      emptyMessage="No log rows yet — waiting on the data formatting algorithm (flattenLogs)."
+      emptyMessage="No logs in the selected window."
       renderExpandedRow={(row) => <LogDetails row={row} />}
       pageSize={pageSize}
     />

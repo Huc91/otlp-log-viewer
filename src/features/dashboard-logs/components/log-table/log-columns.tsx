@@ -1,5 +1,4 @@
 import type { ColumnDef } from "@tanstack/react-table";
-import { formatTime } from "@/lib/format";
 import type { LogRow } from "@/features/dashboard-logs/api/view-model";
 import { SeverityBadge } from "../severity-badge/severity-badge";
 import styles from "./log-columns.module.css";
@@ -20,7 +19,7 @@ export const logColumns: ColumnDef<LogRow>[] = [
     accessorKey: "timestampMs",
     header: "Time",
     meta: { fixedWidth: 104 },
-    cell: ({ row }) => formatTime(new Date(row.original.timestampMs)),
+    cell: ({ row }) => row.original.time,
   },
   {
     accessorKey: "body",

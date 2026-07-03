@@ -20,20 +20,20 @@
 }
 
 .bar {
-  fill: var(--color-gray-300);
-  cursor: pointer;
+  fill: var(--color-green-50);
   transition: fill 0.1s ease;
 }
 
-.bar:hover {
+.bar:hover,
+.bar:focus-visible {
   fill: var(--color-green-400);
+  outline: none;
 }
 
 .tooltip {
   --shift-x: -50%;
   --shift-y: calc(-100% - 6px);
   position: absolute;
-  /* default: centered above the bar tip; edge/height variants override the shifts */
   transform: translate(var(--shift-x), var(--shift-y));
   padding: 10px 14px;
   border: 1px solid var(--color-gray-700);
@@ -52,7 +52,6 @@
 }
 
 .tooltipBelowTip {
-  /* +100% = own height: top edge lands on the bar tip, box hangs below it */
   --shift-y: calc(100% + 10px);
 }
 

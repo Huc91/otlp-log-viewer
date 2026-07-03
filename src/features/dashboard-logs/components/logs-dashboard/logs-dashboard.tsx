@@ -1,7 +1,7 @@
 "use client";
 
 import { StatCard } from "@/components/stat-card/stat-card";
-import { formatClock } from "@/lib/format";
+import { useIsDesktop } from "../../hooks/use-is-desktop";
 import { useLogsDashboard } from "../../hooks/use-logs-dashboard";
 import { useDashboardUiStore } from "../../stores";
 import { LogTableCard } from "../log-table-card/log-table-card";
@@ -10,9 +10,9 @@ import styles from "./style.module.css";
 
 export function LogsDashboard() {
   const { data, isPending, isError, refetch } = useLogsDashboard();
-  const isTableExpanded = useDashboardUiStore(
-    (state) => state.isTableExpanded,
-  );
+  const isDesktop = useIsDesktop();
+  const isTableExpanded =
+    useDashboardUiStore((state) => state.isTableExpanded) && isDesktop;
 
   if (isPending) {
     return <p className={styles.stateNote}>Fetching logs…</p>;
@@ -45,7 +45,7 @@ export function LogsDashboard() {
           <LogsDistributionCard buckets={data.buckets} range={data.range} />
           <StatCard
             value={data.rows.length}
-            caption={`logs at ${formatClock(new Date(data.fetchedAtMs))}`}
+            caption={`logs at ${data.fetchedAtLabel}`}
           />
         </div>
       )}

@@ -43,9 +43,6 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* Desktop is a viewport-locked dashboard: cards keep their height and
-   overflowing content scrolls inside them. Below the two-column breakpoint
-   (960px, same as the dashboard grid) the page scrolls normally. */
 @media (min-width: 961px) {
   body {
     height: 100dvh;

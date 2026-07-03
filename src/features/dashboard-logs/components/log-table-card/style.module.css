@@ -9,7 +9,6 @@
   padding: 24px 16px;
 }
 
-/* the area under the controls: fills the card, children scroll inside it */
 .tableArea {
   display: flex;
   flex-direction: column;
@@ -59,8 +58,6 @@
   outline-offset: 2px;
 }
 
-/* expand exists to take over the chart column; below the grid breakpoint the
-   layout is single-column already and the extra columns cannot fit */
 @media (max-width: 960px) {
   .expandButton {
     display: none;
