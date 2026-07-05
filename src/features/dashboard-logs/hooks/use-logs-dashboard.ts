@@ -16,9 +16,6 @@ async function fetchLogsDashboard(): Promise<LogsDashboardData> {
   return response.json();
 }
 
-// First load is served from the RSC-prefetched hydration cache; `refetch()`
-// gives on-demand refresh, POLL_INTERVAL_MS gives polling. Same query key as
-// the server prefetch — that contract is what makes hydration work.
 export function useLogsDashboard() {
   return useQuery({
     queryKey: LOGS_DASHBOARD_QUERY_KEY,

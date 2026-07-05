@@ -1,9 +1,8 @@
 import { describe, expect, it } from "vitest";
+import { HOUR_IN_MS } from "@/lib/constants";
 import { clusterLogsByHour, flattenLogs, groupByNamespace } from "./transform";
 import type { ExportLogsServiceRequest } from "./types";
 import type { LogRow } from "./view-model";
-
-const HOUR_IN_MS = 3_600_000;
 
 function makeRow(timestampMs: number, id = String(timestampMs)): LogRow {
   return {
@@ -170,30 +169,30 @@ describe("clusterLogsByHour", () => {
   const oldestMs = Date.UTC(2026, 6, 2, 14, 44);
 
   it("spans from the oldest log's hour to the newest log's hour", () => {
-    const buckets = clusterLogsByHour([makeRow(newestMs), makeRow(oldestMs)]);
-    expect(buckets[0]?.startTime).toBe(Date.UTC(2026, 6, 2, 14, 0));
-    expect(buckets[buckets.length - 1]?.startTime).toBe(
+    const clusters = clusterLogsByHour([makeRow(newestMs), makeRow(oldestMs)]);
+    expect(clusters[0]?.startTime).toBe(Date.UTC(2026, 6, 2, 14, 0));
+    expect(clusters[clusters.length - 1]?.startTime).toBe(
       Date.UTC(2026, 6, 3, 14, 0),
     );
-    expect(buckets).toHaveLength(25);
+    expect(clusters).toHaveLength(25);
   });
 
-  it("drops no rows: bucket counts sum to the row count", () => {
+  it("drops no rows: cluster counts sum to the row count", () => {
     const rows = Array.from({ length: 50 }, (_, index) =>
       makeRow(newestMs - index * ((newestMs - oldestMs) / 49), String(index)),
     );
-    const buckets = clusterLogsByHour(rows);
-    const total = buckets.reduce((sum, bucket) => sum + bucket.count, 0);
+    const clusters = clusterLogsByHour(rows);
+    const total = clusters.reduce((sum, cluster) => sum + cluster.count, 0);
     expect(total).toBe(rows.length);
   });
 
-  it("includes empty buckets so the series is complete", () => {
-    const buckets = clusterLogsByHour([
+  it("includes empty clusters so the series is complete", () => {
+    const clusters = clusterLogsByHour([
       makeRow(newestMs),
       makeRow(newestMs - 5 * HOUR_IN_MS),
     ]);
-    expect(buckets).toHaveLength(6);
-    expect(buckets.filter((bucket) => bucket.count === 0)).toHaveLength(4);
+    expect(clusters).toHaveLength(6);
+    expect(clusters.filter((cluster) => cluster.count === 0)).toHaveLength(4);
   });
 
   it("returns an empty series for no rows", () => {

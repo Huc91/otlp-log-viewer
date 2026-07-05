@@ -6,6 +6,12 @@
   gap: 32px;
 }
 
+@media (min-width: 961px) {
+  .grid {
+    grid-template-rows: minmax(0, 1fr);
+  }
+}
+
 @media (prefers-reduced-motion: no-preference) {
   .grid {
     transition: grid-template-columns 0.3s ease, gap 0.3s ease;

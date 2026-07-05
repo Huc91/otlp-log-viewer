@@ -242,6 +242,3 @@ matches the design tokens (no hardcoded colors/sizes).
   (`unwrapAnyValue`, `flattenLogs`, `buildHistogram`, `groupByService`) is being
   implemented by Luca by hand — work in progress, may transiently fail
   `tsc`. Never modify it without explicit ask; report its type errors, don't fix
-  them. The UI is wired to the signatures; everything lights up when they land.
-- Structure and styling decisions marked SETTLED above are closed. If a change
-  is truly needed, name the concrete cost of the status quo first.

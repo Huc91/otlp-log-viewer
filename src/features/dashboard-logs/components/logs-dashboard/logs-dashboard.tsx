@@ -42,7 +42,7 @@ export function LogsDashboard() {
     >
       <LogTableCard rows={data.rows} groups={data.groups} />
       <div className={styles.rightColumn} inert={isTableExpanded}>
-        <LogsDistributionCard buckets={data.buckets} range={data.range} />
+        <LogsDistributionCard clusters={data.clusters} range={data.range} />
         <StatCard
           value={data.rows.length}
           caption={`logs at ${data.fetchedAtLabel}`}

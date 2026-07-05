@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import { DataTable, type RowFocusRequest } from "@/components/data-table/data-table";
 import type { LogRow } from "@/features/dashboard-logs/api/view-model";
 import { useDashboardUiStore } from "@/features/dashboard-logs/stores";
-import { HOUR_IN_MS } from "@/lib/time";
+import { HOUR_IN_MS } from "@/lib/constants";
 import { LogDetails } from "../log-details/log-details";
 import { expandedLogColumns, logColumns } from "./log-columns";
 

@@ -1,5 +1,5 @@
 // Wire types for the OTLP logs payload, modeled after
-// opentelemetry/proto/logs/v1/logs.proto. All fields are optional on the wire.
+// opentelemetry/proto/logs/v1/logs.proto
 
 export interface ExportLogsServiceRequest {
   resourceLogs?: ResourceLogs[];

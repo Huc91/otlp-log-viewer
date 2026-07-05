@@ -25,11 +25,13 @@ interface BarChartProps {
   onPointSelect?: (point: BarChartPoint) => void;
 }
 
+// Thresholds sized to the tooltip's footprint (~150px wide, ~66px tall) so it
+// flips before crossing the card edge, where .rightColumn's overflow clips it.
 function tooltipClassName(centerPercent: number, barFraction: number): string {
   const classNames = [styles.tooltip];
-  if (barFraction > 0.75) classNames.push(styles.tooltipBelowTip);
-  if (centerPercent < 10) classNames.push(styles.tooltipLeftEdge);
-  else if (centerPercent > 90) classNames.push(styles.tooltipRightEdge);
+  if (barFraction > 0.6) classNames.push(styles.tooltipBelowTip);
+  if (centerPercent < 20) classNames.push(styles.tooltipLeftEdge);
+  else if (centerPercent > 80) classNames.push(styles.tooltipRightEdge);
   return classNames.join(" ");
 }
 

@@ -6,12 +6,12 @@ import { useDashboardUiStore } from "@/features/dashboard-logs/stores";
 import styles from "./style.module.css";
 
 interface LogsDistributionCardProps {
-  buckets: ClusteredLogsByHour[];
+  clusters: ClusteredLogsByHour[];
   range: TimeRange;
 }
 
 export function LogsDistributionCard({
-  buckets,
+  clusters,
   range,
 }: LogsDistributionCardProps) {
   const highlightedHourMs = useDashboardUiStore(
@@ -21,22 +21,22 @@ export function LogsDistributionCard({
   const requestHourFocus = useDashboardUiStore(
     (state) => state.requestHourFocus,
   );
-  const points = buckets.map((bucket, bucketIndex) => ({
-    x: bucket.startTime,
-    y: bucket.count,
-    label: `${bucket.count} logs`,
-    sublabel: bucket.rangeLabel,
+  const points = clusters.map((cluster, clusterIndex) => ({
+    x: cluster.startTime,
+    y: cluster.count,
+    label: `${cluster.count} logs`,
+    sublabel: cluster.rangeLabel,
     xLabel:
-      bucketIndex % 4 === 0 || bucketIndex === buckets.length - 1
-        ? bucket.startLabel
+      clusterIndex % 4 === 0 || clusterIndex === clusters.length - 1
+        ? cluster.startLabel
         : undefined,
   }));
 
-  const firstBucket = buckets[0];
-  const lastBucket = buckets[buckets.length - 1];
+  const firstCluster = clusters[0];
+  const lastCluster = clusters[clusters.length - 1];
   const xDomain: [number, number] =
-    firstBucket && lastBucket
-      ? [firstBucket.startTime, lastBucket.endTime]
+    firstCluster && lastCluster
+      ? [firstCluster.startTime, lastCluster.endTime]
       : [range.fromMs, range.toMs];
 
   return (

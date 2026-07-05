@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { HOUR_IN_MS } from "@/lib/time";
+import { HOUR_IN_MS } from "@/lib/constants";
 
 export type DisplayMode = "flat" | "grouped";
 

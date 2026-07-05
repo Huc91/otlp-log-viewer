@@ -67,10 +67,13 @@ function prettyPrintJson(text: string): string {
 function detectBodyKind(text: string | undefined): BodyKind {
   if (!text) return "text";
   if (/\n\s+at\s/.test(text)) return "stacktrace";
-  // cheap precheck avoids running JSON.parse (expensive w/ try-catch) on
-  // the ~80% of bodies that are plain text and can't possibly be JSON
-  const c = text.charCodeAt(0);
-  if (c !== 123 /* { */ && c !== 91 /* [ */) return "text";
+  // simple cheap precheck avoids running JSON.parse (expensive w/ try-catch) on
+  // the ~80% of bodies that are plain text and can't possibly be JSON and literally bumps perfomances.
+  // 123 = {
+  // 91 = [
+
+  const char = text.charCodeAt(0);
+  if (char !== 123 && char !== 91 ) return "text";
   try {
     JSON.parse(text);
     return "json";

@@ -1,6 +1,3 @@
-// Render-ready shapes the UI consumes. Produced server-side by transform.ts;
-// client components never see raw OTLP.
-
 export const SEVERITY_BANDS = [
   "UNSPECIFIED",
   "TRACE",
@@ -81,7 +78,7 @@ export interface TimeRange {
 
 export interface LogsDashboardData {
   rows: LogRow[];
-  buckets: ClusteredLogsByHour[];
+  clusters: ClusteredLogsByHour[];
   groups: NamespaceGroup[];
   range: TimeRange;
   fetchedAtMs: number;
