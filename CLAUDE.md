@@ -62,7 +62,7 @@ Verified gotchas (against the live API — treat as invariants):
 | Server-side computation | Fetch + transform OTLP in Server Components; clients receive flat, render-ready view models. Raw OTLP never crosses the client boundary. |
 | Zustand (no Redux) | UI state only (display mode, expansion, future time-range selection). Server data flows down as props. |
 | TanStack Table v8 | Headless (we own markup to match Penpot), built-in expanding/grouping. Add `@tanstack/react-virtual` only if row count demands it; never AG Grid/MUI. |
-| Pure D3, math-only | `d3-scale`, `d3-array`, `d3-time-format` compute; React renders the SVG. Never let D3 own DOM (`.select().append()` is banned). |
+| Pure D3, math-only | `d3-scale`, `d3-array` compute; React renders the SVG. Never let D3 own DOM (`.select().append()` is banned). |
 | CSS Modules | Chosen after evaluating Tailwind, styled-components, styled-jsx: zero runtime, RSC-compatible, the Next.js docs' recommended standard for custom scoped CSS. |
 | Drizzle only if a DB appears | No persistence in scope. Do not add a database speculatively. |
 | `connection()` + `<Suspense>` | The route must render dynamically (random data per request) while streaming a loading fallback. |
@@ -94,7 +94,8 @@ src/
       hooks/                  # use-logs-dashboard.ts (TanStack Query hook)
       stores/                 # index.ts — display-mode store (zustand)
   lib/                        # truly app-wide pure helpers only
-    format.ts                 # d3-time-format helpers
+    format.ts                 # Intl.DateTimeFormat helpers, timezone pinned via APP_TIMEZONE
+                              # (Vercel reserves TZ; unset → system timezone)
     query-client.ts           # per-request (server) / singleton (browser) QueryClient
 ```
 
