@@ -71,7 +71,8 @@ Tech stack I chose:
 
 - Next.js (latest) + React (latest)
 - D3.js (only the math functions)
-- Zustand for the store
+- Zustand for the store (only for interface states, for everything else: Tanstack Query)
+- Tanstack Query for data
 - No need for a DB, so no ORM like Drizzle
 
 ### Architecture
