@@ -2,7 +2,7 @@
 
 import { BarChart } from "@/components/charts/bar-chart/bar-chart";
 import type { ClusteredLogsByHour, TimeRange } from "@/features/dashboard-logs/api/view-model";
-import { useDashboardUiStore } from "@/features/dashboard-logs/stores";
+import { useStore } from "@/features/dashboard-logs/stores";
 import styles from "./style.module.css";
 
 interface LogsDistributionCardProps {
@@ -14,11 +14,11 @@ export function LogsDistributionCard({
   clusters,
   range,
 }: LogsDistributionCardProps) {
-  const highlightedHourMs = useDashboardUiStore(
+  const highlightedHourMs = useStore(
     (state) => state.highlightedHourMs,
   );
-  const displayMode = useDashboardUiStore((state) => state.displayMode);
-  const requestHourFocus = useDashboardUiStore(
+  const displayMode = useStore((state) => state.displayMode);
+  const requestHourFocus = useStore(
     (state) => state.requestHourFocus,
   );
   const points = clusters.map((cluster, clusterIndex) => ({

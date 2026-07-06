@@ -1,7 +1,7 @@
 "use client";
 
 import { useIsDesktop } from "@/features/dashboard-logs/hooks/use-is-desktop";
-import { useDashboardUiStore } from "@/features/dashboard-logs/stores";
+import { useStore } from "@/features/dashboard-logs/stores";
 import type { LogRow, NamespaceGroup } from "@/features/dashboard-logs/api/view-model";
 import { DisplayModeToggle } from "../display-mode-toggle/display-mode-toggle";
 import { GroupedLogList } from "../grouped-log-list/grouped-log-list";
@@ -14,11 +14,11 @@ interface LogTableCardProps {
 }
 
 export function LogTableCard({ rows, groups }: LogTableCardProps) {
-  const displayMode = useDashboardUiStore((state) => state.displayMode);
+  const displayMode = useStore((state) => state.displayMode);
   const isDesktop = useIsDesktop();
   const isTableExpanded =
-    useDashboardUiStore((state) => state.isTableExpanded) && isDesktop;
-  const toggleTableExpanded = useDashboardUiStore(
+    useStore((state) => state.isTableExpanded) && isDesktop;
+  const toggleTableExpanded = useStore(
     (state) => state.toggleTableExpanded,
   );
 

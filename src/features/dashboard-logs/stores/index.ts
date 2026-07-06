@@ -14,7 +14,7 @@ interface DashboardUiState {
   requestHourFocus: (hourMs: number) => void;
 }
 
-export const useDashboardUiStore = create<DashboardUiState>()((set) => ({
+export const useStore = create<DashboardUiState>()((set) => ({
   displayMode: "flat",
   isTableExpanded: false,
   highlightedHourMs: null,
