@@ -21,8 +21,8 @@ import {
 } from "./view-model";
 
 
-function buildLogRowId(resourceIndex: number, scopeIndex: number, recordIndex: number): string {
-  return `${resourceIndex}-${scopeIndex}-${recordIndex}`;
+function buildLogRowId(resourceIndex: number, scopeIndex: number, recordIndex: number, timestampMs: number): string {
+  return `${resourceIndex}-${scopeIndex}-${recordIndex}-${timestampMs}`;
 }
 
 function nanoStringToMs(nanoStr: string): number | null {
@@ -154,7 +154,7 @@ export function flattenLogs(request: ExportLogsServiceRequest): LogRow[] {
         const bodyKind = detectBodyKind(bodyText);
 
         rows.push({
-          id: buildLogRowId(resourceIndex, scopeIndex, recordIndex),
+          id: buildLogRowId(resourceIndex, scopeIndex, recordIndex, timestampMs),
           timestampMs,
           time: formatTime(new Date(timestampMs)),
           severityNumber,
