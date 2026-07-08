@@ -54,13 +54,13 @@ export interface ClusteredLogsByHour {
 export interface ServiceGroup {
   service: ServiceIdentity;
   resourceAttributes: Record<string, AttributeValue>;
-  rows: LogRow[];
+  logCount: number;
   scopeGroups: ScopeGroup[];
 }
 
 export interface NamespaceGroup {
   namespace: string;
-  rows: LogRow[];
+  logCount: number;
   serviceGroups: ServiceGroup[];
 }
 

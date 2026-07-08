@@ -224,10 +224,10 @@ export function groupByNamespace(rows: LogRow[]): NamespaceGroup[] {
   return [...byNamespace.entries()]
     .map(([namespace, namespaceRows]) => ({
       namespace,
-      rows: namespaceRows,
+      logCount: namespaceRows.length,
       serviceGroups: buildServiceGroups(namespaceRows),
     }))
-    .sort((a, b) => b.rows.length - a.rows.length);
+    .sort((a, b) => b.logCount - a.logCount);
 }
 
 function buildServiceGroups(rows: LogRow[]): ServiceGroup[] {
@@ -238,10 +238,10 @@ function buildServiceGroups(rows: LogRow[]): ServiceGroup[] {
     .map((serviceRows) => ({
       service: serviceRows[0].service,
       resourceAttributes: mergeResourceAttributes(serviceRows),
-      rows: serviceRows,
+      logCount: serviceRows.length,
       scopeGroups: buildScopeGroups(serviceRows),
     }))
-    .sort((a, b) => b.rows.length - a.rows.length);
+    .sort((a, b) => b.logCount - a.logCount);
 }
 
 function mergeResourceAttributes(rows: LogRow[]): Record<string, AttributeValue> {

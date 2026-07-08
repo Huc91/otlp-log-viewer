@@ -26,7 +26,7 @@ export function GroupedLogList({ groups }: GroupedLogListProps) {
               {group.namespace || "no namespace"}
             </span>
             <span className={styles.summaryMeta}>
-              {group.serviceGroups.length} services · {group.rows.length} logs
+              {group.serviceGroups.length} services · {group.logCount} logs
             </span>
           </summary>
           <div className={styles.groupChildren}>
@@ -55,7 +55,7 @@ function ServiceSection({ group }: { group: ServiceGroup }) {
           )}
         </span>
         <span className={styles.summaryMeta}>
-          {group.scopeGroups.length} scopes · {group.rows.length} logs
+          {group.scopeGroups.length} scopes · {group.logCount} logs
         </span>
       </summary>
       <div className={styles.groupChildren}>

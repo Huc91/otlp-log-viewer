@@ -150,11 +150,12 @@ describe("flattenLogs", () => {
       "shop",
       "platform",
     ]);
-    expect(groups[0]?.rows).toHaveLength(4);
+    expect(groups[0]?.logCount).toBe(4);
     expect(groups[0]?.serviceGroups).toHaveLength(1);
 
     const checkout = groups[0]?.serviceGroups[0];
     expect(checkout?.service.name).toBe("checkout");
+    expect(checkout?.logCount).toBe(4);
     expect(checkout?.resourceAttributes.region).toBe("us-east-1");
     expect(checkout?.scopeGroups.map((scope) => scope.scope.name)).toEqual([
       "mock",
