@@ -8,9 +8,13 @@ import { useStore } from "../../stores";
 import { LogTableCard } from "../log-table-card/log-table-card";
 import { LogsDistributionCard } from "../logs-distribution-card/logs-distribution-card";
 import styles from "./style.module.css";
+import { useSearchParams } from "next/navigation";
+
 
 export function LogsDashboard() {
-  const { data, isPending, isError, refetch } = useLogsDashboard();
+  const severityFilter = useSearchParams().get("severityFilter") ?? "";
+  console.log('severityFilter in comp', severityFilter)
+  const { data, isPending, isError, refetch } = useLogsDashboard(severityFilter);
   const isDesktop = useIsDesktop();
   const isTableExpanded =
     useStore((state) => state.isTableExpanded) && isDesktop;

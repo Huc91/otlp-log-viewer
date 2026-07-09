@@ -132,7 +132,7 @@ function extractServiceIdentity(resource: Resource | undefined): ServiceIdentity
   };
 }
 
-export function flattenLogs(request: ExportLogsServiceRequest): LogRow[] {
+export function flattenLogs(request: ExportLogsServiceRequest, filterBySeverityText: string): LogRow[] {
   const rows: LogRow[] = [];
 
   request.resourceLogs?.forEach((resourceLog, resourceIndex) => {
@@ -143,6 +143,13 @@ export function flattenLogs(request: ExportLogsServiceRequest): LogRow[] {
       const scope = extractScopeIdentity(scopeLog.scope);
 
       scopeLog.logRecords?.forEach((logRecord, recordIndex) => {
+        console.log('filterBySeverityText in transform server', filterBySeverityText);
+        if(filterBySeverityText) {
+          console.log(logRecord.severityText === filterBySeverityText, logRecord.severityText, filterBySeverityText)
+          if(logRecord.severityText !== filterBySeverityText) {
+            return;
+          }
+        }
         const nano = logRecord.timeUnixNano ?? logRecord.observedTimeUnixNano;
         if (nano === undefined) return;
         const timestampMs = nanoStringToMs(nano);

@@ -6,9 +6,9 @@ import type { LogsDashboardData, TimeRange } from "./view-model";
 
 export const LOGS_DASHBOARD_QUERY_KEY = ["logs-dashboard"] as const;
 
-export async function getLogsDashboardData(): Promise<LogsDashboardData> {
+export async function getLogsDashboardData(severity: string): Promise<LogsDashboardData> {
   const { request, fetchedAtMs } = await fetchLogs();
-  const rows = flattenLogs(request);
+  const rows = flattenLogs(request, severity);
   const clusters = clusterLogsByHour(rows);
   const fromMs = fetchedAtMs - DAY_IN_MS;
   const range: TimeRange = {

@@ -10,12 +10,14 @@ import {
 import { getQueryClient } from "@/lib/query-client";
 import styles from "./page.module.css";
 
-export default function DashboardPage() {
+export default async function DashboardPage({searchParams}) {
+  const { severityFilter } = await searchParams;
+  console.log('params id', severityFilter);
   return (
     <main className={styles.main}>
       <h1 className={styles.pageTitle}>Dashboard</h1>
       <Suspense fallback={<DashboardSkeleton />}>
-        <PrefetchedDashboard />
+        <PrefetchedDashboard filter={severityFilter}/>
       </Suspense>
     </main>
   );
@@ -23,14 +25,17 @@ export default function DashboardPage() {
 
 // Server-side prefetch into the query cache: the client renders instantly from
 // the hydrated cache, while refetch()/polling stay available via the hook.
-async function PrefetchedDashboard() {
+async function PrefetchedDashboard({filter}) {
+
   // The API returns random data per request; opt into dynamic rendering so a
   // fresh payload is fetched on every page load, not at build time.
   await connection();
   const queryClient = getQueryClient();
+  const valueToFilter = filter ? filter : ""
+  console.log('valueToFilter', valueToFilter);
   await queryClient.prefetchQuery({
-    queryKey: LOGS_DASHBOARD_QUERY_KEY,
-    queryFn: getLogsDashboardData,
+    queryKey: [...LOGS_DASHBOARD_QUERY_KEY, valueToFilter],
+    queryFn: () => getLogsDashboardData( valueToFilter),
   });
 
   return (

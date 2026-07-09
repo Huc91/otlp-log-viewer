@@ -104,7 +104,7 @@ describe("flattenLogs", () => {
   } satisfies ExportLogsServiceRequest;
 
   it("converts nanosecond strings without precision loss", () => {
-    const rows = flattenLogs(request);
+    const rows = flattenLogs(request, "");
     expect(rows.map((row) => row.timestampMs)).toEqual([
       1782925584937, 1782925583937, 1782925582937, 1782925581937,
       1782925580937,
@@ -112,12 +112,12 @@ describe("flattenLogs", () => {
   });
 
   it("maps severityNumber to its band", () => {
-    const bands = flattenLogs(request).map((row) => row.severityBand);
+    const bands = flattenLogs(request, "").map((row) => row.severityBand);
     expect(bands).toEqual(["WARN", "DEBUG", "WARN", "INFO", "FATAL"]);
   });
 
   it("extracts service identity, scope, and attribute records", () => {
-    const fatalRow = flattenLogs(request)[4];
+    const fatalRow = flattenLogs(request, "")[4];
     expect(fatalRow?.service).toEqual({
       key: "shop/checkout/1.2.3",
       namespace: "shop",
@@ -134,17 +134,17 @@ describe("flattenLogs", () => {
   });
 
   it("classifies bodies as json, stacktrace, or text", () => {
-    const kinds = flattenLogs(request).map((row) => row.bodyKind);
+    const kinds = flattenLogs(request, "").map((row) => row.bodyKind);
     expect(kinds).toEqual(["text", "text", "stacktrace", "json", "text"]);
   });
 
   it("sorts rows newest-first", () => {
-    const rows = flattenLogs(request);
+    const rows = flattenLogs(request, "");
     expect(rows[0]?.timestampMs).toBeGreaterThan(rows[4]?.timestampMs ?? 0);
   });
 
   it("groups by namespace, then service, then scope, busiest first", () => {
-    const groups = groupByNamespace(flattenLogs(request));
+    const groups = groupByNamespace(flattenLogs(request, ""));
 
     expect(groups.map((group) => group.namespace)).toEqual([
       "shop",
